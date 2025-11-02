@@ -1,0 +1,13 @@
+[project]
+name = "fretworks"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "matplot>=0.1.9",
+    "mingus>=0.6.1",
+    "pip>=25.3",
+    "pycairo>=1.29.0",
+    "pyqt6>=6.10.2",
+]
