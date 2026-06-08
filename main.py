@@ -1,117 +1,127 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QWidget
-from PyQt6.QtGui import QPainter, QImage
-import cairo
-from plot import draw_fretboard
-from mingus.core import notes, scales
-from config import scale_colors
+# import Chord
+# import Notes
+import time
+import json
 
-# Build fretboard data
-tuning = ['E', 'A', 'D', 'G', 'B', 'E']
-num_frets = 18
-root = 'A'
-scale_type = 'major'
+notes = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
+accidental = { 'flat': 'b', 'sharp': '#' }
 
-# Sharp/flat conversion (user preference)
-useFlats = False
-sharp_to_flat = {
-        'C#':'Db',
-        'D#':'Eb',
-        'F#':'Gb',
-        'G#':'Ab',
-        'A#':'Bb' }
+numberOfFrets = 12
+numberOfStrings = 6
+fretboardStrings = ['E', 'A', 'D', 'G', 'B', 'E']
 
-def to_flat(note):
-    base_note = ''.join(filter(str.isalpha, note)).upper()
-    return sharp_to_flat.get(base_note, base_note)
+# instaniating empty lists
+diatonicNotes = []
+accidentalNotes = []
 
-def note_at_fret(open_note, fret):
-    base_note = ''.join(filter(str.isalpha, open_note)).upper()
-    return notes.int_to_note((notes.note_to_int(base_note) + fret) % 12)
+def GenerateNotes(accidentalType) -> list:
+    for note in range(len(notes)):
+        if accidentalType == 'flat':
+            # Shift the accidentals list by one element
+            # to prevent A Ab B Bb...
+            reorder = notes[1:] + notes[:1]
+            accidentalNotes.append(reorder[note] + accidental[accidentalType])
 
-# Get scale notes
-if scale_type.lower() == 'major':
-    scale_notes = scales.Major(root).ascending()
-elif scale_type.lower() == 'minor':
-    scale_notes = scales.NaturalMinor(root).ascending()
-else:
-    raise ValueError("Unsupported scale type")
+        if accidentalType == 'sharp':
+            # Append the sharp to each element in the list
+            accidentalNotes.append(notes[note] + accidental[accidentalType])
 
-if useFlats:
-    scale_notes = [to_flat(n) for n in scale_notes]
+        # Add the natural note
+        diatonicNotes.append(notes[note])
+        # Then add the appropriate accidental note
+        diatonicNotes.append(accidentalNotes[note])
 
-# Build fretboard
-if useFlats:
-    fretboard = [[to_flat(note_at_fret(s, f)) for f in range(num_frets + 1)] for s in tuning]
-else:
-    fretboard = [[note_at_fret(s, f) for f in range(num_frets + 1)] for s in tuning]
+    # Remove enharmonic notes (notes that should be skipped)
+    if accidentalType == 'sharp':
+        diatonicNotes.remove('E#')
+        diatonicNotes.remove('B#')
 
-# Map note -> scale degree
-degree_map = {note: deg for deg, note in enumerate(scale_notes, start=1)}
+    if accidentalType == 'flat':
+        diatonicNotes.remove('Fb')
+        diatonicNotes.remove('Cb')
 
-# PyQt6 widget
-class FretboardWidget(QWidget):
-    def __init__(self, fretboard, tuning, degree_map, root, scale_type, num_frets=18):
-        super().__init__()
-        self.fretboard = fretboard
-        self.tuning = tuning
-        self.degree_map = degree_map
-        self.root = root
-        self.scale_type = scale_type
-        self.num_frets = num_frets
+    return diatonicNotes
 
-    def _cairo_to_qimage(self, surface):
-        width = surface.get_width()
-        height = surface.get_height()
-        data = surface.get_data()
-        return QImage(data, width, height, QImage.Format.Format_ARGB32)
+def OrderNotes(noteIndex, numOfFrets) -> list:
+    orderedNotes = []
+    ''' Order notes starting with the given noteIndex '''
+    for i in range(numOfFrets + 1):
+        # circularly linked list using modulo %
+        circularIndex = (i+noteIndex) % len(diatonicNotes)
+        # Append notes starting at the circularIndex
+        orderedNotes.append(diatonicNotes[circularIndex])
+    return orderedNotes
 
-    def paintEvent(self, event):
-        width = self.width()
-        height = self.height()
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-        ctx = cairo.Context(surface)
+def getNoteId(stringNote) -> int:
+    ''' Returns the starting index 
+        of a given note.
+    '''
+    # The index for the chosen note
+    id = diatonicNotes.index(stringNote)
+    return id  
 
-        # Draw fretboard using plot.py
-        draw_fretboard(
-            ctx=ctx,
-            width=width,
-            height=height,
-            fretboard=self.fretboard,
-            tuning=self.tuning,
-            num_frets=self.num_frets,
-            degree_map=self.degree_map,
-            root=self.root,
-            scale_type=self.scale_type
-        )
+def CreateFretboard(int: numberOfStrings, list: fretboardStrings) -> list:
+    ''' Create a nested list with all notes on the fretboard '''
+    fretboard = []
+    for string in range(numberOfStrings):
+        noteId = getNoteId(fretboardStrings[string]) # int
+        orderedNotes = OrderNotes(noteId, numberOfFrets) # list
+        # Appends the orderedNotes list to fretboard list
+        fretboard.append(orderedNotes)
+    return fretboard
 
-        painter = QPainter(self)
-        qimage = self._cairo_to_qimage(surface)
-        painter.drawImage(0, 0, qimage)
-        painter.end()
+def getNoteIndices(fretboard, note) -> dict:
+    ''' Returns a dict of a single note
+        and its positions on the fretboard.
+     '''
+    positions = []
+    instances = {}
+    for i in range(len(fretboard)):
+        for j in range(len(fretboard[i])):
+            if fretboard[i][j] == note:
+                positions.append((i,j))
+    instances = { note: positions }
+    return instances 
 
-# Main window
-class MainWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Fretboard (PyQt + Cairo)")
-        self.resize(1000, 300)
+def getFretboardMap(fretboard) -> dict:
+    ''' Returns a dict:
+        all diatonic notes as keys.
+        all fretboard positions as values.
+    '''
+    noteDict = {}
+    for note in range(len(diatonicNotes)):
+        # Combine noteDict with each iteration using | (operator)
+        noteDict = noteDict | getNoteIndices(fretboard, diatonicNotes[note])
+    return noteDict
 
-        self.fretboard_widget = FretboardWidget(
-            fretboard=fretboard,
-            tuning=tuning,
-            degree_map=degree_map,
-            root=root,
-            scale_type=scale_type,
-            num_frets=num_frets
-        )
-        self.fretboard_widget.setParent(self)
-        self.fretboard_widget.setGeometry(0, 0, self.width(), self.height())
+def formatJSON(noteDict) -> dict:
+    ''' Returns a dict that newlines
+        after each key-value pair.
+    '''
+    lines = []
+    for key, value in noteDict.items():
+        k = json.dumps(key)
+        v = json.dumps(value)
+        lines.append(f'    {k}: {v}')
+    custom_json = "{\n" + ",\n".join(lines) + "\n}"
+    return custom_json
 
-# Run app
+
+def main():
+   # Set the preferred accidental
+    accidentalType = 'sharp'
+
+    # Generate diatonic notes with accidentals
+    GenerateNotes(accidentalType)
+
+    # Create fretboard grid as a list
+    fretboard = CreateFretboard(numberOfStrings, fretboardStrings)
+
+    # Get a dict of all notes/positions
+    noteDict = getFretboardMap(fretboard)
+
+    # Format the dictionary and print
+    print(formatJSON(noteDict))
+
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
-
+    main()
