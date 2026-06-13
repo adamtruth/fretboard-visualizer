@@ -2,9 +2,10 @@ import threading, time, sys
 import tkinter as tk
 
 from PIL import Image, ImageTk
-from pynput.mouse import Button, Controller
+from pynput.mouse import Button, Controller, Listener
 
 root = tk.Tk()
+mouse = Controller()
 
 ''' Reposition the fretboard image (center if possible).
     Rewrite the ugly code.
@@ -27,18 +28,30 @@ def setupTk():
     updateMousePosition(position_label)
 
 def updateMousePosition(position_label):
-    mouse = Controller()
     position_label.config(text="Mouse Position: {}".format(mouse.position))
-    root.after(250, lambda: updateMousePosition(position_label)) # 500ms
+    update_time = 250
+    root.after(update_time, lambda: updateMousePosition(position_label))
+
+click_positions = []
+# on a click event record the coordintes: [x,y]
+# and append it to the click positions list
+# at the end of the program, output the list
+def on_click(x, y, button, pressed):
+    if pressed and button == Button.left:
+        return click_positions.append(mouse.position)
 
 def main():
     setupTk()
     root.mainloop()
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("User interrupted program.")
-        sys.exit(1)
+    with Listener(
+        on_click=on_click) as listener:
+        try:
+            main()
+            listener.join()
+        except KeyboardInterrupt:
+            print("User interrupted program.")
+            print(click_positions)
+            sys.exit(1)
 
