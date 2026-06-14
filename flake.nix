@@ -24,6 +24,7 @@
             (python3.withPackages (ps: with ps; [
               tkinter
               evdev
+              pycairo
             ]))
           ];
           # Explicitly tell setup.py where the header files are stored in Nix

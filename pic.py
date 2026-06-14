@@ -7,17 +7,14 @@ from pynput.mouse import Button, Controller, Listener
 root = tk.Tk()
 mouse = Controller()
 
-''' Reposition the fretboard image (center if possible).
-    Rewrite the ugly code.
-
-'''
+''' Reposition the fretboard image (center if possible).  '''
 
 def setupTk():
     root.title("Fretboard")
-    
-    fretboard_image = Image.open("fretboard.png")
+
+    fretboard_image = Image.open("assets/fretboard.png")
     tk_image = ImageTk.PhotoImage(fretboard_image)
-    
+
     label = tk.Label(root, image=tk_image)
     label.image = tk_image
     label.pack(padx=100,pady=300)
@@ -45,8 +42,7 @@ def main():
     root.mainloop()
 
 if __name__ == "__main__":
-    with Listener(
-        on_click=on_click) as listener:
+    with Listener(on_click=on_click) as listener:
         try:
             main()
             listener.join()
