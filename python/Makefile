@@ -12,7 +12,7 @@ run: ## Execute the program
 
 .PHONY: gui
 gui: ## Execute the program
-	@uv run python3 -m gui
+	@uv run python3 -m new_gui
 
 .PHONY: pic
 pic: ## Execute the program

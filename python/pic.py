@@ -1,4 +1,6 @@
-import threading, time, sys
+# import threading
+# import time
+import sys
 import tkinter as tk
 
 from PIL import Image, ImageTk

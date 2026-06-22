@@ -1,6 +1,5 @@
 import sys, math
 
-import cairo
 import tkinter as tk
 from PIL import Image, ImageTk
 
@@ -12,7 +11,7 @@ colors = {
         'red': (1, 0, 0),
         'orange': (0, 0, 0),
         'yellow': (0 , 0, 0),
-        'light_green': (0 , 0, 0)
+        'light_green': (0 , 0, 0),
         'green': (0 , 0, 0),
         'aqua': (0 , 0, 0),
         'blue': (0 , 0, 0),
@@ -23,13 +22,6 @@ colors = {
 }
 
 root = tk.Tk()
-
-# Unused class
-class Resolution:
-    def __init__(self, path, x, y):
-        path = self.path
-        x = self.x
-        y = self.y
 
 def getImageDimensions(path) -> tuple:
     img = Image.open(path) # from PIL (pillow)
@@ -55,29 +47,9 @@ def setupImage(position):
     label.image = tk_image
     label.pack(padx=position[0], pady=position[1])
 
-def drawCirclePNG(width, height):
-    # Initialize the surface and context
-    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-    ctx = cairo.Context(surface)
-
-    # Clear background
-    ctx.set_source_rgb(1, 1, 1)
-    ctx.paint()
-
-    cx, cy = width/2, height/2
-    r = 60
-
-    ctx.arc(cx, cy, r, 0, 2  * math.pi)
-    ctx.set_source_rgb(0.2, 0.6, 0.8)
-    ctx.fill_preserve()
-    ctx.set_line_width(6)
-    ctx.set_source_rgb(0, 0, 0)
-    ctx.stroke()
-
-    buf = io.BytesIO()
-    surface.write_to_png(buf)
-    buf.seek(0)
-    return buf
+def drawCircle():
+    circle = draw.ellipse((50, 50, 150, 150), fill="#F00F4F")  # Red circle
+    return circle
 
 def main():
     image_resolution = getImageDimensions(image_path)
