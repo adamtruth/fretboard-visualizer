@@ -24,9 +24,7 @@ screen_resolution = (3456, 2090)  # current resolution
 draw = ImageDraw.Draw(image)
 
 # Circle attributes
-# x_i, y_i = 55, 40  # Initial starting location of the (Open low E string)
-# x_bar, y_bar = 45, 120  # Distance between frets (x) and STRING_COUNT (y)
-x_i, y_i = 45, 97  # Initial starting location of the (Open low E string)
+x_i, y_i = 45, 52  # Initial starting location of the (Open low E string)
 x_bar, y_bar = 120, 45  # Distance between frets (x) and STRING_COUNT (y)
 r = 15  # radius
 x_offset, y_offset = 10, 10  # offset delta string/fret distances
@@ -91,8 +89,12 @@ def get_start_note_id(note: str) -> int:
 def create_fretboard(STRING_COUNT: int, STRING_NOTES: list) -> list:
     ''' Create a nested list with all notes on the fretboard '''
     fretboard = []
+    # We reverse the E,A,D,G,B,E because the index 0,0 is the low E string
+    # thus it's flipped. So either we flip the indices so high E is 0,0
+    # or we just flip the string_notes
+    string_notes = STRING_NOTES[::-1]
     for string in range(STRING_COUNT):
-        note_id = get_start_note_id(STRING_NOTES[string])  # int
+        note_id = get_start_note_id(string_notes[string])  # int
         ordered_notes = order_diatonic_notes(note_id, FRET_COUNT)  # list
 
         # Appends the ordered_notes list to fretboard list
@@ -150,25 +152,23 @@ def map_fretboard_notes(note_dict):
         for j in range(len(fret_positions)):
             frets = fret_positions[j]  # all tuples
             x_pos, y_pos = None, None
-
             for k in range(len(frets)):
                 fret_number = frets[k]  # accessing the tuple indices
 
-                if fret_number >= 1 and k == 1:
-                    shift = 48  # lessen the the distance between fret 0 and 1
+                # lessen the the distance between fret 0 and 1
+                if k == 1 and fret_number >= 1:
+                    shift = 48
                 else:
                     shift = 0
 
-                # if fret_number <= 8 and k == 1:
-                #     x_offset -= 2
-
                 if k == 0:  # k=0 is string
-                    y_pos = y_i + ((fret_number-1) * y_bar)
+                    y_pos = y_i + (fret_number * y_bar)
                 if k == 1:  # k=1 is fret
                     x_pos = x_i + (fret_number * x_bar) - shift - x_offset
 
             circle_coord = (x_pos, y_pos)
             positions.append(circle_coord)
+
         note_positions[diatonic_notes[i]] = positions
     return note_positions
 
@@ -202,12 +202,9 @@ class Circle():
                 fill=self.color, outline=None, width=1)
 
 
-def display_image(note_positions) -> None:
-    # array of colors to select from
-
-    for i in range(len(diatonic_notes)):  # 12
-        notes_lists = note_positions.get(diatonic_notes[i])  # all lists
-        # print(f'{i}: {notes_lists}')
+def display_image(note_positions, notes: list) -> None:
+    for i in range(len(notes)):  # 12
+        notes_lists = note_positions.get(notes[i])  # all lists
 
         for j in range(len(notes_lists)):  # 6
             position = notes_lists[j]  # all tuples
@@ -231,11 +228,11 @@ def main():
 
     # Get a dict of all notes/positions
     note_dict = get_fretboard(fretboard)
-    # print(format_json(note_dict))
 
     note_positions = map_fretboard_notes(note_dict)
-    # print(format_json(note_positions))
-    display_image(note_positions)
+
+    chord = ['E', 'G#', 'B']
+    display_image(note_positions, chord)
 
 
 if __name__ == "__main__":
