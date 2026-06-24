@@ -7,167 +7,182 @@ from PIL import Image, ImageDraw
 notes = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
 accidental = {'flat': 'b', 'sharp': '#'}
 
-numberOfFrets = 12
-numberOfStrings = 6
-fretboardStrings = ['E', 'A', 'D', 'G', 'B', 'E']
+FRET_COUNT = 12
+STRING_COUNT = 6
+STRING_NOTES = ['E', 'A', 'D', 'G', 'B', 'E']
+COLORS = ["red", "orange", "yellow",
+          "green", "aqua", "blue", "navy", "purple"]
 
-diatonicNotes = []
-accidentalNotes = []
+diatonic_notes = []
+accidental_notes = []
+
+# GUI-related Globals
+window_title = 'Fretboard Visualizer'
+image_path = 'assets/fretboard.png'
+image = Image.open(image_path)
+screen_resolution = (3456, 2090)  # current resolution
+draw = ImageDraw.Draw(image)
+
+# Circle attributes
+# x_i, y_i = 55, 40  # Initial starting location of the (Open low E string)
+# x_bar, y_bar = 45, 120  # Distance between frets (x) and STRING_COUNT (y)
+x_i, y_i = 45, 97  # Initial starting location of the (Open low E string)
+x_bar, y_bar = 120, 45  # Distance between frets (x) and STRING_COUNT (y)
+r = 15  # radius
+x_offset, y_offset = 10, 10  # offset delta string/fret distances
 
 
-def GenerateNotes(accidentalType) -> list:
+def generate_diatonic_notes(accidental_type: str) -> list:
     for note in range(len(notes)):
-        if accidentalType == 'flat':
+        if accidental_type == 'flat':
             # Shift the accidentals list by one element
             # preventing the ordering A Ab B Bb...
             reorder = notes[1:] + notes[:1]
-            accidentalNotes.append(reorder[note] + accidental[accidentalType])
+            accidental_notes.append(
+                    reorder[note] + accidental[accidental_type])
 
-        if accidentalType == 'sharp':
-            # Append the sharp to each element in the list
-            accidentalNotes.append(notes[note] + accidental[accidentalType])
+        # Append the sharp to each element in the list
+        if accidental_type == 'sharp':
+            accidental_notes.append(notes[note] + accidental[accidental_type])
 
         # Add the natural note
-        diatonicNotes.append(notes[note])
+        diatonic_notes.append(notes[note])
         # Then add the appropriate accidental note
-        diatonicNotes.append(accidentalNotes[note])
+        diatonic_notes.append(accidental_notes[note])
 
     # Remove enharmonic notes (notes that should be skipped)
-    if accidentalType == 'sharp':
-        diatonicNotes.remove('E#')
-        diatonicNotes.remove('B#')
+    if accidental_type == 'sharp':
+        diatonic_notes.remove('E#')
+        diatonic_notes.remove('B#')
 
-    if accidentalType == 'flat':
-        diatonicNotes.remove('Fb')
-        diatonicNotes.remove('Cb')
+    if accidental_type == 'flat':
+        diatonic_notes.remove('Fb')
+        diatonic_notes.remove('Cb')
 
-    return diatonicNotes
+    return diatonic_notes
 
 
-def OrderNotes(noteIndex, numOfFrets) -> list:
-    ''' Order notes starting with the given noteIndex
-        @param1: noteIndex: where we begin the list of notes (or tonal center)
-        @param2: numOfFrets: the number of frets we are working with
+def order_diatonic_notes(start_note: int, frets: int) -> list:
+    ''' Order notes starting with the given start_note
+        @param1: start_note: where we begin the list of notes (or tonal center)
+        @param2: frets: the number of frets we are working with
     '''
-    orderedNotes = []
+    ordered_notes = []
 
-    for i in range(numOfFrets + 1):
+    for i in range(frets + 1):
         # circularly linked list using modulo %
-        circularIndex = (i+noteIndex) % len(diatonicNotes)
-        # Append notes starting at the circularIndex
-        orderedNotes.append(diatonicNotes[circularIndex])
+        circular_idx = (i+start_note) % len(diatonic_notes)
+        # Append notes starting at the circular_idx
+        ordered_notes.append(diatonic_notes[circular_idx])
 
-    return orderedNotes
+    return ordered_notes
 
 
-def getNoteId(stringNote) -> int:
+def get_start_note_id(note: str) -> int:
     ''' Returns the starting index
         of a given note.
-        @param1 - stringNote: the note we would like to find the index of
+        @param1 - note: the note we would like to find the index of
     '''
     # The index for the chosen note
-    id = diatonicNotes.index(stringNote)
+    id = diatonic_notes.index(note)
     return id
 
 
-def CreateFretboard(numberOfStrings, fretboardStrings) -> list:
+def create_fretboard(STRING_COUNT: int, STRING_NOTES: list) -> list:
     ''' Create a nested list with all notes on the fretboard '''
     fretboard = []
-    for string in range(numberOfStrings):
-        noteId = getNoteId(fretboardStrings[string])  # int
-        orderedNotes = OrderNotes(noteId, numberOfFrets)  # list
+    for string in range(STRING_COUNT):
+        note_id = get_start_note_id(STRING_NOTES[string])  # int
+        ordered_notes = order_diatonic_notes(note_id, FRET_COUNT)  # list
 
-        # Appends the orderedNotes list to fretboard list
-        fretboard.append(orderedNotes)
+        # Appends the ordered_notes list to fretboard list
+        fretboard.append(ordered_notes)
 
     return fretboard
 
 
-def getNoteIndices(fretboard, note) -> dict:
+def get_note_idx(fretboard: list, note: str) -> dict:
     ''' Returns a dict of a single note and its positions on the fretboard. '''
     positions = []
-    notePositions = {}
+    note_positions = {}
 
     # This nested list was tricky
-    # We are iterating through the frets and the strings.
-    # The string index is [i]
-    # The fret index is [j]
+    # We are iterating through the frets and the STRING_COUNT.
+    # i := string index (0: E string)
+    # j := fret index (0: Open string)
     # So [i][j] is the [string_index][fret_index]
-    for i in range(len(fretboard)):
-        for j in range(len(fretboard[i])):
-            if fretboard[i][j] == note:
-                positions.append((i, j))
+    for string_idx in range(len(fretboard)):
+        for fret_idx in range(len(fretboard[string_idx])):
+            if fretboard[string_idx][fret_idx] == note:
+                positions.append((string_idx, fret_idx))
 
     # mapping the list of lists to the dict
-    notePositions = {note: positions}
+    note_positions = {note: positions}
 
-    return notePositions
+    return note_positions
 
 
-def getFretboardMap(fretboard) -> dict:
+def get_fretboard(fretboard: list) -> dict:
     ''' Returns a dict of all notes
         and their respective indices on the fretboard.
     '''
-    noteDict = {}
-    for note in range(len(diatonicNotes)):
-        # Combine noteDict with each iteration using the intersection operator
-        noteDict = noteDict | getNoteIndices(fretboard, diatonicNotes[note])
+    note_dict = {}
+    for note in range(len(diatonic_notes)):
+        # Combine note_dict with each iteration using the intersection operator
+        note_dict = note_dict | get_note_idx(fretboard, diatonic_notes[note])
 
-    return noteDict
+    return note_dict
 
 
-def mapNoteToFretboard(noteDict):
+def map_fretboard_notes(note_dict):
     '''
     @param1: the note dict with all fretboard positions
     @param2: x position of the F note low E string
     @param3: y position of the F note on the low E string
     '''
-    notePositionDict = {}
+    note_positions = {}
+    x_offset = 0
+    for i in range(len(diatonic_notes)):
+        fret_positions = note_dict.get(diatonic_notes[i])  # all lists
 
-    for i in range(len(diatonicNotes)):
-        x_i, y_i = 55,60
-        x_bar, y_bar = 30, 70
-        inNoteDict = noteDict.get(diatonicNotes[i])  # all lists
-        listOfPositions = []
-        for j in range(len(inNoteDict)):
-            inNoteList = inNoteDict[j]  # all tuples
+        positions = []
+
+        for j in range(len(fret_positions)):
+            frets = fret_positions[j]  # all tuples
             x_pos, y_pos = None, None
-            # print(f'raw tuple for {diatonicNotes[i]}: {inNoteList}')
-            for k in range(len(inNoteList)):
-                inNoteTuple = inNoteList[k]  # accessing the tuple indices
-                if inNoteList[1] > 0:
-                    if k == 0:
-                        x_pos = x_i + (inNoteTuple * x_bar)
-                    if k == 1:
-                        y_pos = y_i + ((inNoteTuple-1) * y_bar)
+
+            for k in range(len(frets)):
+                fret_number = frets[k]  # accessing the tuple indices
+
+                if fret_number >= 1 and k == 1:
+                    shift = 48  # lessen the the distance between fret 0 and 1
                 else:
-                    x_pos = x_i
-                    y_pos = y_i
+                    shift = 0
 
-            position = (x_pos, y_pos)
-            listOfPositions.append(position)
-        notePositionDict[diatonicNotes[i]] = listOfPositions
-    return notePositionDict
+                # if fret_number <= 8 and k == 1:
+                #     x_offset -= 2
+
+                if k == 0:  # k=0 is string
+                    y_pos = y_i + ((fret_number-1) * y_bar)
+                if k == 1:  # k=1 is fret
+                    x_pos = x_i + (fret_number * x_bar) - shift - x_offset
+
+            circle_coord = (x_pos, y_pos)
+            positions.append(circle_coord)
+        note_positions[diatonic_notes[i]] = positions
+    return note_positions
 
 
-def formatJSON(noteDict) -> dict:
+def format_json(note_dict) -> dict:
     ''' Returns a formatted dict that newlines after each key-value pair. '''
     lines = []
-    for key, value in noteDict.items():
+    for key, value in note_dict.items():
         k = json.dumps(key)
         v = json.dumps(value)
         lines.append(f'    {k}: {v}')
     custom_json = "{\n" + ",\n".join(lines) + "\n}"
 
     return custom_json
-
-
-window_title = 'Fretboard Visualizer'
-image_path = 'assets/fretboard.png'
-screen_resolution = (3456, 2090)  # current resolution
-
-image = Image.open(image_path)
-draw = ImageDraw.Draw(image)
 
 
 class Circle():
@@ -187,44 +202,40 @@ class Circle():
                 fill=self.color, outline=None, width=1)
 
 
-def displayImage(notePositions):
+def display_image(note_positions) -> None:
     # array of colors to select from
-    colors = ["red", "orange", "yellow", "green", "blue", "purple"]
-    # x_offset, y_offset = 0, 0  # offsetting string distances
-    r = 15
 
-    for i in range(len(diatonicNotes)): # 12
-        inNotePositions = notePositions.get(diatonicNotes[i])  # all lists
-        print(f'{i}: {inNotePositions}')
+    for i in range(len(diatonic_notes)):  # 12
+        notes_lists = note_positions.get(diatonic_notes[i])  # all lists
+        # print(f'{i}: {notes_lists}')
 
-        for j in range(len(inNotePositions)):  # 6
-            position = inNotePositions[j]  # all tuples
+        for j in range(len(notes_lists)):  # 6
+            position = notes_lists[j]  # all tuples
 
-            circle = Circle(position[1], position[0], r, colors[0])
-            Circle.drawCircle(circle)
+            # Describe circle attributes for PIL to draw
+            circle_attr = Circle(position[0], position[1], r, COLORS[4])
+            Circle.drawCircle(circle_attr)
 
     image.show()
 
 
 def main():
     # Set the preferred accidental
-    accidentalType = 'sharp'
+    accidental_type = 'sharp'
 
     # Generate diatonic notes with accidentals
-    GenerateNotes(accidentalType)
+    generate_diatonic_notes(accidental_type)
 
     # Create fretboard grid as a list
-    fretboard = CreateFretboard(numberOfStrings, fretboardStrings)
+    fretboard = create_fretboard(STRING_COUNT, STRING_NOTES)
 
     # Get a dict of all notes/positions
-    noteDict = getFretboardMap(fretboard)
-    # print(formatJSON(noteDict))
+    note_dict = get_fretboard(fretboard)
+    # print(format_json(note_dict))
 
-    notePositions = mapNoteToFretboard(noteDict)
-    # print(formatJSON(notePositions))
-    displayImage(notePositions)
-    # mapNoteToFretboard(noteDict)
-    # displayImage()
+    note_positions = map_fretboard_notes(note_dict)
+    # print(format_json(note_positions))
+    display_image(note_positions)
 
 
 if __name__ == "__main__":
