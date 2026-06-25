@@ -1,5 +1,5 @@
 import json
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageText
 
 notes = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
 accidental = {'flat': 'b', 'sharp': '#'}
@@ -7,8 +7,8 @@ accidental = {'flat': 'b', 'sharp': '#'}
 FRET_COUNT = 12
 STRING_COUNT = 6
 STRING_NOTES = ['E', 'A', 'D', 'G', 'B', 'E']
-COLORS = ["red", "orange", "yellow",
-          "green", "aqua", "blue", "navy", "purple"]
+# COLORS = ["red", "orange", "yellow",
+COLOR = "black"
 
 diatonic_notes = []
 accidental_notes = []
@@ -32,10 +32,8 @@ r = 15
 # offset delta string/fret distances
 x_offset, y_offset = 10, 10
 
-chord_types = ['major', 'minor']
 
-
-def get_intervals(diatonic_notes, key):
+def set_intervals(diatonic_notes: list, key: str) -> dict:
     intervals = ['root', 'm2', 'M2', 'm3', 'M3',
                  'P4', 'tritone', 'P5', 'm6', 'M6', 'm7', 'M7']
     start_note = get_starting_note(key)
@@ -47,21 +45,66 @@ def get_intervals(diatonic_notes, key):
     return interval
 
 
-class Chord:
-    def __init__(self, root, chord_type):
-        self.root = root
-        self.chord_type = chord_type
+def get_chord(chord_type: str, interval: dict) -> list:
+    chord = [interval['root']]
+    if chord_type == 'major':
+        chord.append(interval['M3'])
+        chord.append(interval['P5'])
+
+    if chord_type == 'minor':
+        chord.append(interval['m3'])
+        chord.append(interval['P5'])
+
+    if chord_type == '7':
+        chord.append(interval['M3'])
+        chord.append(interval['P5'])
+        chord.append(interval['M7'])
+
+    if chord_type == 'dim':
+        chord.append(interval[''])
+        chord.append(interval[''])
+
+    if chord_type == 'aug':
+        chord.append(interval[''])
+        chord.append(interval[''])
+
+    if chord_type == 'sus':
+        chord.append(interval[''])
+        chord.append(interval[''])
+
+    return chord
 
 
-def create_chord(chord_type, interval):
-    chord = []
-    for chord_type in chord_types:
-        if chord_type == 'major':
-            chord = [interval['root'], interval['M3'], interval['P5']]
-            return chord
-        if chord_type == 'minor':
-            chord = [interval['root'], interval['m3'], interval['P5']]
-            return chord
+def create_chord(root, chord_type):
+    interval = set_intervals(diatonic_notes, root)
+    chord = get_chord(chord_type, interval)
+    return chord
+
+
+def get_scale(interval, desired_scale):
+    scale = [interval['root']]
+    if desired_scale == 'major':
+        scale.append(interval['M2'])
+        scale.append(interval['M3'])
+        scale.append(interval['P4'])
+        scale.append(interval['P5'])
+        scale.append(interval['M6'])
+        scale.append(interval['M7'])
+
+    if desired_scale == 'minor':
+        scale.append(interval[''])
+        scale.append(interval[''])
+        scale.append(interval[''])
+        scale.append(interval[''])
+        scale.append(interval[''])
+        scale.append(interval[''])
+    return scale
+
+
+def create_scale(root, desired_scale):
+    interval = set_intervals(diatonic_notes, root)
+    scale = get_scale(interval, desired_scale)
+    return scale
 
 
 def generate_diatonic_notes(accidental_type: str) -> list:
@@ -249,7 +292,7 @@ class Circle():
                 fill=self.color, outline=None, width=1)
 
 
-def display_image(note_map, notes: list) -> None:
+def display_circles(note_map, notes: list) -> None:
     for i in range(len(notes)):  # 12
         notes_lists = note_map.get(notes[i])  # all lists
 
@@ -257,38 +300,63 @@ def display_image(note_map, notes: list) -> None:
             position = notes_lists[j]  # all tuples
 
             # Describe circle attributes for PIL to draw
-            circle_attr = Circle(position[0], position[1], r, COLORS[i])
+            # circle_attr = Circle(position[0], position[1], r, COLORS[i])
+            circle_attr = Circle(position[0], position[1], r, COLOR)
             Circle.drawCircle(circle_attr)
 
-    # image.show()
+    image.show()
 
 
-def main():
-    selected_root = 'E'
+def display_text(note_map, notes: list) -> None:
+    for i in range(len(notes)):  # 12
+        notes_lists = note_map.get(notes[i])  # all lists
 
-    # Set the preferred accidental
-    accidental = 'sharp'
+        for j in range(len(notes_lists)):  # 6
+            position = notes_lists[j]  # all tuples
 
-    # Generate diatonic notes with accidentals
-    generate_diatonic_notes(accidental)
+            x = position[0] - 18
+            y = position[1] - 20
 
+            displayed_text = 'G'
+            text = ImageText.Text(displayed_text)
+            draw.text((x, y), text, "#fff")
+
+    image.show()
+
+
+def display(note_map, notes) -> None:
+    display_circles(note_map, notes)
+    display_text(note_map, notes)
+
+
+def create_fretboard():
     # Create fretboard grid as a list
     notes = set_fretboard_notes(STRING_COUNT, STRING_NOTES)
 
     # Get a dict of all notes/positions
-    fretboard = get_fretboard_notes(notes)
+    note_map = get_fretboard_notes(notes)
 
-    # Coordinates of all fretboard notes
-    note_map = map_fretboard_notes(fretboard)
+    # Map coordinates of all notes to fretboard
+    fretboard = map_fretboard_notes(note_map)
 
-    selected_notes = ['G', 'A#', 'D']
-    display_image(note_map, selected_notes)
+    return fretboard
 
-    get_intervals(diatonic_notes, selected_root)
-    chord2 = create_chord('major', interval)
-    chord1 = create_chord('minor', interval)
-    print(chord1)
-    print(chord2)
+
+def main():
+    preferred_accidental = 'sharp'
+
+    # Generate diatonic notes with preffered accidentals
+    generate_diatonic_notes(preferred_accidental)
+
+    fretboard = create_fretboard()
+
+    # To Display chord notes
+    # chord = create_chord('E', 'major')
+    # display(note_map, chord)
+
+    # Display scale notes
+    desired_scale = create_scale('F', 'major')
+    display(fretboard, desired_scale)
 
 
 if __name__ == "__main__":
