@@ -1,8 +1,11 @@
-from PIL import Image, ImageDraw, ImageText
+from PIL import Image, ImageDraw, ImageText, ImageFont
+
 
 image_path = 'assets/fretboard.png'
+font_path = "assets/fonts/Montserrat.ttf"
 image = Image.open(image_path)
 draw = ImageDraw.Draw(image)
+font = ImageFont.truetype(font_path, 32)
 
 
 def show_image():
@@ -32,7 +35,8 @@ class Text:
         self.y = y
         self.text = text
         self.text_color = text_color
+        self.font = font
 
     def drawText(self):
         text = ImageText.Text(self.text)
-        draw.text((self.x, self.y), text, self.text_color)
+        draw.text((self.x, self.y), text, self.text_color, font=self.font)
