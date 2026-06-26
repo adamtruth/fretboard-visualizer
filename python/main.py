@@ -1,5 +1,6 @@
+import display
+
 import json
-from PIL import Image, ImageDraw, ImageText
 
 notes = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
 accidental = {'flat': 'b', 'sharp': '#'}
@@ -7,7 +8,8 @@ accidental = {'flat': 'b', 'sharp': '#'}
 FRET_COUNT = 12
 STRING_COUNT = 6
 STRING_NOTES = ['E', 'A', 'D', 'G', 'B', 'E']
-# COLORS = ["red", "orange", "yellow",
+COLORS = ["red", "orange", "yellow",
+          "green", "aqua", "blue", "purple"]
 COLOR = "black"
 
 diatonic_notes = []
@@ -17,9 +19,6 @@ interval = {}
 # GUI-related Globals
 window_title = 'Fretboard Visualizer'
 image_path = 'assets/fretboard.png'
-image = Image.open(image_path)
-screen_resolution = (3456, 2090)  # current resolution
-draw = ImageDraw.Draw(image)
 
 # Circle attributes
 
@@ -275,41 +274,30 @@ def format_json(fretboard) -> dict:
     return custom_json
 
 
-class Circle():
-    def __init__(self, x, y, r, color="red"):
-        self.x = x
-        self.y = y
-        self.r = r
-        self.color = color
-
-    def drawCircle(self):
-        draw.circle(
-                (self.x - self.r,
-                 self.y - self.r,
-                 self.x + self.r,
-                 self.y + self.r),
-                self.r,
-                fill=self.color, outline=None, width=1)
-
-
 def display_circles(note_map, notes: list) -> None:
     for i in range(len(notes)):  # 12
         notes_lists = note_map.get(notes[i])  # all lists
 
         for j in range(len(notes_lists)):  # 6
             position = notes_lists[j]  # all tuples
+            x, y = position[0], position[1]
 
             # Describe circle attributes for PIL to draw
-            # circle_attr = Circle(position[0], position[1], r, COLORS[i])
-            circle_attr = Circle(position[0], position[1], r, COLOR)
-            Circle.drawCircle(circle_attr)
+            if i == 0:
+                color = 'red'
+            if i > 0:
+                color = 'blue'
 
-    image.show()
+            circles = display.Circle(x, y, r, color)
+            circles.drawCircle()
+
+    display.show_image()
 
 
 def display_text(note_map, notes: list) -> None:
     for i in range(len(notes)):  # 12
         notes_lists = note_map.get(notes[i])  # all lists
+        print(notes[i])
 
         for j in range(len(notes_lists)):  # 6
             position = notes_lists[j]  # all tuples
@@ -317,14 +305,15 @@ def display_text(note_map, notes: list) -> None:
             x = position[0] - 18
             y = position[1] - 20
 
-            displayed_text = 'G'
-            text = ImageText.Text(displayed_text)
-            draw.text((x, y), text, "#fff")
+            desired_text = str(notes[i])
 
-    image.show()
+            text_attr = display.Text(x, y, desired_text)
+            text_attr.drawText()
+
+    display.show_image()
 
 
-def display(note_map, notes) -> None:
+def display_all(note_map, notes) -> None:
     display_circles(note_map, notes)
     display_text(note_map, notes)
 
@@ -351,12 +340,12 @@ def main():
     fretboard = create_fretboard()
 
     # To Display chord notes
-    # chord = create_chord('E', 'major')
-    # display(note_map, chord)
+    desired_chord = create_chord('E', '7')
+    display_all(fretboard, desired_chord)
 
     # Display scale notes
-    desired_scale = create_scale('F', 'major')
-    display(fretboard, desired_scale)
+    # desired_scale = create_scale('F', 'major')
+    # display(fretboard, desired_scale)
 
 
 if __name__ == "__main__":
