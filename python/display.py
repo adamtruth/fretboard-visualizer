@@ -20,30 +20,6 @@ r = 15
 TEXT_COLOR = '#fff'
 
 
-def create_menu(label, items):
-    # To capture selected item into a variable
-    selected = tk.StringVar()
-
-    menu_button = ttk.Menubutton(root, text=label)
-    menu = tk.Menu(menu_button, tearoff=0)
-
-    for item in items:
-        menu.add_radiobutton(
-                label=item,
-                value=item,
-                variable=selected)
-
-    menu_button['menu'] = menu
-    menu_button.pack(expand=True)
-
-    return selected
-
-
-def draw_label(text):
-    text_label = tk.Label(root, text=text, font=("Arial", 14))
-    text_label.pack(padx=300, pady=300)
-
-
 def reset_image():
     global pil_image, draw
     pil_image = Image.open(image_path)
@@ -52,21 +28,86 @@ def reset_image():
 
 def show_image(on_apply=None):
     root.title('Fretboard Visualizer')
+
+    CHORD_TYPES = ['major', 'minor', '7', 'dim', 'aug']
+    SCALE_TYPES = ['major', 'minor', 'major pentatonic', 'minor pentatonic']
+
+    # Image
     tk_image = ImageTk.PhotoImage(pil_image)
-    label = tk.Label(root, image=tk_image)
-    label.pack(padx=100, pady=300)
-    notes = nt.generate_notes('sharp')
-    key_menu = create_menu('Key', notes)
-    type_menu = create_menu('Type', ['major', 'minor', '7', 'dim', 'aug'])
+    image_label = tk.Label(root, image=tk_image)
+    image_label.image = tk_image
+    image_label.pack(pady=(10, 0))
+
+    # Name label below image
+    name_label = tk.Label(root, text='', font=('Arial', 14))
+    name_label.pack(pady=5)
+
+    # Inline controls row
+    controls = tk.Frame(root)
+    controls.pack(pady=10)
+
+    # Select scales or chords
+    toggle_btn = ttk.Button(controls, text='Scales')
+    toggle_btn.pack(side=tk.LEFT, padx=(10, 10))
+    mode = tk.StringVar(value='chord')
+    key_var = tk.StringVar()
+    type_var = tk.StringVar()
+    accidental_var = tk.StringVar(value='flat')
+
+    # Select accidental
+    tk.Label(controls, text='Accidental').pack(side=tk.LEFT, padx=(0, 4))
+    ttk.Radiobutton(controls, text='♭', variable=accidental_var,
+                    value='flat').pack(side=tk.LEFT)
+
+    ttk.Radiobutton(controls, text='♯', variable=accidental_var,
+                    value='sharp').pack(side=tk.LEFT, padx=(0, 10))
+
+    tk.Label(controls, text='Key').pack(side=tk.LEFT, padx=(0, 2))
+    key_menu = ttk.Combobox(controls, textvariable=key_var,
+                            values=nt.generate_notes('flat'),
+                            width=4, state='readonly')
+    key_menu.pack(side=tk.LEFT, padx=(0, 10))
+
+    # Select Chord or Scale type
+    tk.Label(controls, text='Type').pack(side=tk.LEFT, padx=(0, 2))
+    type_menu = ttk.Combobox(controls,
+                             textvariable=type_var,
+                             values=CHORD_TYPES,
+                             width=18, state='readonly')
+    type_menu.pack(side=tk.LEFT, padx=(0, 10))
+
+    apply_btn = ttk.Button(controls, text='Apply')
+    apply_btn.pack(side=tk.LEFT, padx=(0, 10))
+
+    def update_keys(*_):
+        key_menu['values'] = nt.generate_notes(accidental_var.get())
+        key_var.set('')
+
+    accidental_var.trace_add('write', update_keys)
+
+    def toggle_mode():
+        if mode.get() == 'chord':
+            mode.set('scale')
+            type_menu['values'] = SCALE_TYPES
+            toggle_btn.config(text='Chords')
+        else:
+            mode.set('chord')
+            type_menu['values'] = CHORD_TYPES
+            toggle_btn.config(text='Scales')
+        type_var.set('')
 
     def apply():
         reset_image()
         if on_apply:
-            on_apply(key_menu.get(), type_menu.get())
+            on_apply(key_var.get(), type_var.get(), mode.get(), accidental_var.get())
         new_image = ImageTk.PhotoImage(pil_image)
-        label.config(image=new_image)
+        image_label.config(image=new_image)
+        image_label.image = new_image
+        name_label.config(text=f'{key_var.get()} {type_var.get()}')
 
-    ttk.Button(root, text='Apply', command=apply).pack()
+    toggle_btn.config(command=toggle_mode)
+    apply_btn.config(command=apply)
+
     root.mainloop()
 
 
