@@ -2,16 +2,19 @@ import notes as nt
 import tkinter as tk
 
 from tkinter import ttk
-from PIL import Image, ImageDraw, ImageText, ImageTk
+from PIL import Image, ImageDraw, ImageFont, ImageText, ImageTk
 
 # PIL globals
-image_path = 'assets/fretboard.png'
+image_path = 'assets/images/fretboard.png'
 pil_image = Image.open(image_path)
 
 draw = ImageDraw.Draw(pil_image)
 
-# font_path = "assets/fonts/Montserrat.ttf"
-# font = ImageFont.truetype(font_path, 32)
+font_path = 'assets/fonts/Montserrat.ttf'
+try:
+    font = ImageFont.truetype(font_path, 20)
+except OSError:
+    print('Error loading font')
 
 # Tkinter globals
 root = tk.Tk()
@@ -29,8 +32,11 @@ def reset_image():
 def show_image(on_apply=None):
     root.title('Fretboard Visualizer')
 
+    # Replace with for chord_type in chord_types
     CHORD_TYPES = ['major', 'minor', '7', 'dim', 'aug']
-    SCALE_TYPES = ['major', 'minor', 'major pentatonic', 'minor pentatonic']
+    # Replace with for scale_type in scale_types
+    SCALE_TYPES = ['major', 'minor', 'major pentatonic', 'minor pentatonic',
+                   'diminished', 'augmented', 'whole tone']
 
     # Image
     tk_image = ImageTk.PhotoImage(pil_image)
@@ -159,8 +165,8 @@ class Text:
         self.y = y
         self.text = text
         self.text_color = text_color
-        # self.font = font
+        self.font = font
 
     def drawText(self):
         text = ImageText.Text(self.text)
-        draw.text((self.x, self.y), text, self.text_color)
+        draw.text((self.x, self.y), text, self.text_color, font=self.font)
