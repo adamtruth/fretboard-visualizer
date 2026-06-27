@@ -1,19 +1,16 @@
-import display
+import display as dp
 
 import json
 
-notes = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
+NOTES = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
 accidental = {'flat': 'b', 'sharp': '#'}
 
 FRET_COUNT = 12
-STRING_COUNT = 6
-STRING_NOTES = ['E', 'A', 'D', 'G', 'B', 'E']
+STRINGS = ['E', 'A', 'D', 'G', 'B', 'E']
 TEXT_COLOR = "white"
-CIRCLE_COLORS = ["red", "blue"]
 
-diatonic_notes = []
+notes = []
 interval = {}
-
 # GUI-related Globals
 window_title = 'Fretboard Visualizer'
 
@@ -28,74 +25,72 @@ r = 15
 x_offset, y_offset = 10, 10
 
 
-def generate_diatonic_notes(accidental_type: str) -> list:
+def generate_notes(accidental_type: str) -> list:
     ''' Returns diatonic notes (including specified accidentals). '''
     accidental_notes = []
-    for i in range(len(notes)):
+    for i in range(len(NOTES)):
         # Append the sharp to each element in the list
         if accidental_type == 'sharp':
-            accidental_notes.append(notes[i] + accidental[accidental_type])
+            accidental_notes.append(NOTES[i] + accidental[accidental_type])
 
         if accidental_type == 'flat':
             # Shift the accidentals list by one element
             # preventing the ordering A Ab B Bb...
-            reorder = notes[1:] + notes[:1]
-            accidental_notes.append(reorder[i] + accidental[accidental_type])
+            shift = NOTES[1:] + NOTES[:1]
+            accidental_notes.append(shift[i] + accidental[accidental_type])
 
         # Add the natural note
-        diatonic_notes.append(notes[i])
+        notes.append(NOTES[i])
         # Then add the appropriate accidental note
-        diatonic_notes.append(accidental_notes[i])
+        notes.append(accidental_notes[i])
 
     # Remove enharmonic notes (notes that should be skipped)
     if accidental_type == 'sharp':
-        diatonic_notes.remove('E#')
-        diatonic_notes.remove('B#')
+        notes.remove('E#')
+        notes.remove('B#')
 
     if accidental_type == 'flat':
-        diatonic_notes.remove('Fb')
-        diatonic_notes.remove('Cb')
+        notes.remove('Fb')
+        notes.remove('Cb')
 
-    return diatonic_notes
+    return notes
 
 
 def get_note_idx(note: str) -> int:
-    ''' Returns the starting index
-        of a given note.
-        @param1 - note: the note we would like to find the index of
+    ''' Returns the starting index of a given note.
+        e.g. E returns 7
     '''
     # The index (int) for the chosen note
-    return diatonic_notes.index(note)
+    return notes.index(note)
 
 
-def order_diatonic_notes(root_idx: int) -> list:
+def order_notes(root: str) -> list:
     ''' Order notes starting with the given start_note
-        @param1: start_note: where we begin the list of notes (or tonal center)
-        @param2: frets: the number of frets we are working with
     '''
     ordered_notes = []
+    root_idx = get_note_idx(root)
 
+    # Circularly linked list using modulo %
+    # Append notes starting at the circular_idx
     for i in range(FRET_COUNT + 1):
-        # circularly linked list using modulo %
-        # Append notes starting at the circular_idx
-        circular_idx = (i + root_idx) % len(diatonic_notes)
-        ordered_notes.append(diatonic_notes[circular_idx])
+        circular_idx = (i + root_idx) % len(notes)
+        ordered_notes.append(notes[circular_idx])
 
     return ordered_notes
 
 
-def set_fretboard_notes(STRING_COUNT: int, STRING_NOTES: list) -> list:
+def set_fretboard_notes(STRINGS: list) -> list:
     ''' Create a nested list with all notes on the fretboard '''
     fretboard_notes = []
 
-    # NOTE: We reverse the E,A,D,G,B,E because the index 0,0 is the low E string
-    # thus it's flipped. So either we flip the indices so high E is 0,0
+    # NOTE: We reverse the E,A,D,G,B,E
+    # the index 0,0 is the low E string thus it's flipped
+    # We could flip the indices so high E is 0,0
     # or we just flip the string_notes
-    string_notes = STRING_NOTES[::-1]
+    strings = STRINGS[::-1]
 
-    for string in range(STRING_COUNT):
-        note_idx = get_note_idx(string_notes[string])  # int
-        ordered_notes = order_diatonic_notes(note_idx)  # list
+    for string in strings:
+        ordered_notes = order_notes(string)  # list
 
         # Appends the ordered_notes list to fretboard list
         fretboard_notes.append(ordered_notes)
@@ -126,57 +121,29 @@ def get_fret_positions(fretboard: list, note: str) -> dict:
     return fret_positions
 
 
-def get_fretboard_notes(fret_positions) -> dict:
+def get_fretboard_notes(fret_positions: list) -> dict:
     ''' Returns a dict of all notes
         and their respective indices on the fretboard.
+        e.g. {'A': [(0,5), (1,0), ...], 'B':...}
     '''
     fretboard = {}
-    for note in range(len(diatonic_notes)):
+    for note in notes:
         # Combine fretboard with each iteration using the intersection operator
         fretboard = fretboard | get_fret_positions(
-                fret_positions, diatonic_notes[note])
+                fret_positions, note)
 
     return fretboard
 
 
-# helper function to set the distance between frets
-# FIX: looks disgustin
-def get_offset(fret_number):
-    if fret_number == 0:
-        return 0
-    if fret_number == 1:
-        return 46
-    if fret_number == 2:
-        return 39
-    if fret_number == 3:
-        return 39
-    if fret_number == 4:
-        return 36
-    if fret_number == 5:
-        return 36
-    if fret_number == 6:
-        return 40
-    if fret_number == 7:
-        return 50
-    if fret_number == 8:
-        return 57
-    if fret_number == 9:
-        return 72
-    if fret_number == 10:
-        return 85
-    if fret_number == 11:
-        return 105
-    if fret_number == 12:
-        return 125
-
-
 def map_fretboard_notes(fretboard_notes):
-    ''' Maps each note to a coordinate on the fretboard. '''
+    ''' Maps each note to a coordinate on the fretboard.
+        e.g. {'A': [(x0,y0),(x1,y1),...], 'B':...}
+    '''
     fretboard_map = {}
-    # for i in range(len(diatonic_notes)):
+    # for i in range(len(notes)):
     x_offset = 0
-    for note in range(len(diatonic_notes)):
-        fret_positions = fretboard_notes.get(diatonic_notes[note])  # all lists
+    for note in notes:
+        fret_positions = fretboard_notes.get(note)  # all lists
 
         positions = []
 
@@ -191,32 +158,38 @@ def map_fretboard_notes(fretboard_notes):
                 if k == 0:  # k=0 is string
                     y_pos = y_i + (fret_number * y_bar)
                 if k == 1:  # k=1 is fret
-                    x_offset = get_offset(fret_number)
+                    x_offset = dp.get_offset(fret_number)
                     x_pos = x_i + (fret_number * x_bar) - x_offset
 
             note_position = ((x_pos, y_pos))
             positions.append(note_position)
 
-        fretboard_map[diatonic_notes[note]] = positions
+        fretboard_map[note] = positions
 
     return fretboard_map
 
 
-def set_intervals(diatonic_notes: list, key: str) -> dict:
+def get_interval(notes: list, key: str) -> dict:
+    ''' Returns the list of intervals
+        e.g. {'root': 'A', 'm2': 'Bb',...}
+    '''
     intervals = ['root', 'm2', 'M2', 'm3', 'M3',
                  'P4', 'tritone', 'P5', 'm6', 'M6', 'm7', 'M7']
 
-    start_note = get_note_idx(key)
+    root_idx = get_note_idx(key)
 
-    for i in range(len(diatonic_notes)):
+    for i in range(len(notes)):
         # TODO: Reusing circular_idx, turn into function
-        circular_idx = (i+start_note) % len(diatonic_notes)
-        interval[intervals[i]] = diatonic_notes[circular_idx]
+        circular_idx = (i + root_idx) % len(notes)
+        interval[intervals[i]] = notes[circular_idx]
 
     return interval
 
 
 def get_chord(chord_type: str, interval: dict) -> list:
+    ''' Returns a chord
+        e.g. ['A', 'C#', 'E']
+    '''
     chord = [interval['root']]
     if chord_type == 'major':
         chord.append(interval['M3'])
@@ -247,7 +220,7 @@ def get_chord(chord_type: str, interval: dict) -> list:
 
 
 def create_chord(root: str, chord_type: str) -> list:
-    interval = set_intervals(diatonic_notes, root)
+    interval = get_interval(notes, root)
     chord = get_chord(chord_type, interval)
     return chord
 
@@ -287,23 +260,47 @@ def get_scale(interval: dict, desired_scale: str):
 
 
 def create_scale(root: str, desired_scale: str) -> list:
-    interval = set_intervals(diatonic_notes, root)
+    interval = get_interval(notes, root)
     scale = get_scale(interval, desired_scale)
     return scale
 
 
-# TODO: Fix this function
-def get_relative_key(key: str, scale_type: str) -> tuple:
-    scale_idx = get_note_idx(key)
-    scale = notes[scale_idx:] + notes[:scale_idx]
-    if scale_type == 'major':
-        rel_key = scale[2]
-        rel_scale = 'minor'
-    if scale_type == 'minor':
-        rel_key = scale[5]
-        rel_scale = 'major'
+def display(fretboard_map, notes: list) -> None:
+    idx = 0
+    for note in notes:
+        notes_lists = fretboard_map.get(note)  # all lists
 
-    return rel_key, rel_scale
+        if idx == 0:
+            is_root = True
+        else:
+            is_root = False
+
+        idx += 1
+
+        for position in notes_lists:
+            x, y = position[0], position[1]
+
+            # Describe circle attributes for PIL to draw
+            if is_root is True:
+                color = 'red'
+            else:
+                color = 'blue'
+
+            circles = dp.Circle(x, y, r, color)
+            circles.drawCircle()
+
+            # So we can center the notes with a accidental
+            text = str(note)
+            if len(text) == 2:
+                x -= 20
+            else:
+                x -= 18
+
+            y -= 20
+            text = dp.Text(x, y, text, TEXT_COLOR)
+            text.drawText()
+
+    dp.show_image()
 
 
 """ Helper functions """
@@ -330,62 +327,27 @@ def split_str(combined_str: str) -> list:
     return split_str
 
 
-def display_circles(fretboard_map, notes: list) -> None:
-    for i in range(len(notes)):  # 12
-        notes_lists = fretboard_map.get(notes[i])  # all lists
+# TODO: Fix this function
+def get_relative_key(key: str, scale_type: str) -> tuple:
+    scale_idx = get_note_idx(key)
+    scale = notes[scale_idx:] + notes[:scale_idx]
+    if scale_type == 'major':
+        rel_key = scale[2]
+        rel_scale = 'minor'
+    if scale_type == 'minor':
+        rel_key = scale[5]
+        rel_scale = 'major'
 
-        for j in range(len(notes_lists)):  # 6
-            position = notes_lists[j]  # all tuples
-            x, y = position[0], position[1]
-
-            # Describe circle attributes for PIL to draw
-            if i == 0:
-                color = CIRCLE_COLORS[0]
-            if i > 0:
-                color = CIRCLE_COLORS[1]
-
-            circles = display.Circle(x, y, r, color)
-            circles.drawCircle()
-
-    display.show_image()
-
-
-def display_text(fretboard_map: dict, notes: list) -> None:
-    for i in range(len(notes)):
-        notes_lists = fretboard_map.get(notes[i])
-
-        for j in range(len(notes_lists)):
-            position = notes_lists[j]
-
-            text = str(notes[i])
-            x, y = position[0], position[1]
-
-            # So we can center the notes with a accidental
-            if len(text) == 2:
-                x -= 20
-            else:
-                x -= 18
-
-            y -= 20
-
-            text_attr = display.Text(x, y, text, TEXT_COLOR)
-            text_attr.drawText()
-
-    display.show_image()
-
-
-def display_all(fretboard_map: dict, notes: list) -> None:
-    display_circles(fretboard_map, notes)
-    display_text(fretboard_map, notes)
+    return rel_key, rel_scale
 
 
 def create_fretboard():
     ''' Helper function to return the completed fretboard map. '''
     # Create fretboard grid as a list
-    notes = set_fretboard_notes(STRING_COUNT, STRING_NOTES)
+    fretboard_notes = set_fretboard_notes(STRINGS)
 
     # Get a dict of all notes/positions
-    fretboard_map = get_fretboard_notes(notes)
+    fretboard_map = get_fretboard_notes(fretboard_notes)
 
     # Map coordinates of all notes to fretboard
     fretboard = map_fretboard_notes(fretboard_map)
@@ -401,17 +363,15 @@ def main():
     preferred_accidental = 'flat'
 
     # Generate diatonic notes with preffered accidentals
-    generate_diatonic_notes(preferred_accidental)
+    generate_notes(preferred_accidental)
 
     # "fretboard" has mapped notes to positions
     fretboard = create_fretboard()
 
     # Display scale notes
     desired_scale = create_scale('C', 'major')
-    display_all(fretboard, desired_scale)
-
-    rel_key = get_relative_key('E', 'major')
-    print(rel_key)
+    desired_chord = create_chord('C', 'major')
+    display(fretboard, desired_scale)
 
 
 if __name__ == "__main__":

@@ -1,15 +1,44 @@
-from PIL import Image, ImageDraw, ImageText, ImageFont
+from PIL import Image, ImageDraw, ImageText
 
 
 image_path = 'assets/fretboard.png'
-font_path = "assets/fonts/Montserrat.ttf"
+# font_path = "assets/fonts/Montserrat.ttf"
 image = Image.open(image_path)
 draw = ImageDraw.Draw(image)
-font = ImageFont.truetype(font_path, 32)
+# font = ImageFont.truetype(font_path, 32)
 
 
 def show_image():
     image.show()
+
+
+def get_offset(fret):
+    if fret == 0:
+        return 0
+    if fret == 1:
+        return 46
+    if fret == 2:
+        return 39
+    if fret == 3:
+        return 39
+    if fret == 4:
+        return 36
+    if fret == 5:
+        return 36
+    if fret == 6:
+        return 40
+    if fret == 7:
+        return 50
+    if fret == 8:
+        return 57
+    if fret == 9:
+        return 72
+    if fret == 10:
+        return 85
+    if fret == 11:
+        return 105
+    if fret == 12:
+        return 125
 
 
 class Circle:
@@ -35,8 +64,8 @@ class Text:
         self.y = y
         self.text = text
         self.text_color = text_color
-        self.font = font
+        # self.font = font
 
     def drawText(self):
         text = ImageText.Text(self.text)
-        draw.text((self.x, self.y), text, self.text_color, font=self.font)
+        draw.text((self.x, self.y), text, self.text_color)
