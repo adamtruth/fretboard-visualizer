@@ -1,8 +1,8 @@
-import note
+import notes as nt
 import tkinter as tk
 
-from PIL import Image, ImageDraw, ImageText, ImageTk
 from tkinter import ttk
+from PIL import Image, ImageDraw, ImageText, ImageTk
 
 # PIL globals
 image_path = 'assets/fretboard.png'
@@ -16,16 +16,7 @@ draw = ImageDraw.Draw(pil_image)
 # Tkinter globals
 root = tk.Tk()
 
-# Circle attributes
-# Initial starting location (Open low E string)
-x_i, y_i = 45, 57
-# Distance between frets (x) and STRING_COUNT (y)
-x_bar, y_bar = 120, 45
-# radius
 r = 15
-# offset delta string/fret distances
-x_offset, y_offset = 10, 10
-
 TEXT_COLOR = '#fff'
 
 
@@ -53,82 +44,55 @@ def draw_label(text):
     text_label.pack(padx=300, pady=300)
 
 
-def show_image():
+def reset_image():
+    global pil_image, draw
+    pil_image = Image.open(image_path)
+    draw = ImageDraw.Draw(pil_image)
+
+
+def show_image(on_apply=None):
     root.title('Fretboard Visualizer')
     tk_image = ImageTk.PhotoImage(pil_image)
     label = tk.Label(root, image=tk_image)
     label.pack(padx=100, pady=300)
-    notes = note.generate_notes('sharp')
-    create_menu('Key', notes)
-    create_menu('Type', ['major'])
+    notes = nt.generate_notes('sharp')
+    key_menu = create_menu('Key', notes)
+    type_menu = create_menu('Type', ['major', 'minor', '7', 'dim', 'aug'])
+
+    def apply():
+        reset_image()
+        if on_apply:
+            on_apply(key_menu.get(), type_menu.get())
+        new_image = ImageTk.PhotoImage(pil_image)
+        label.config(image=new_image)
+
+    ttk.Button(root, text='Apply', command=apply).pack()
     root.mainloop()
 
 
-def display(fretboard_map, notes: list) -> None:
+def draw_notes(fretboard_map, notes: list) -> None:
     idx = 0
     for n in notes:
-        notes_lists = fretboard_map.get(n)  # all lists
+        notes_lists = fretboard_map.get(n)
 
-        if idx == 0:
-            is_root = True
-        else:
-            is_root = False
-
+        is_root = idx == 0
         idx += 1
 
         for position in notes_lists:
             x, y = position[0], position[1]
 
-            # Describe circle attributes for PIL to draw
-            if is_root is True:
-                color = 'red'
-            else:
-                color = 'blue'
+            color = 'red' if is_root else 'blue'
+            Circle(x, y, r, color).drawCircle()
 
-            circles = Circle(x, y, r, color)
-            circles.drawCircle()
-
-            # So we can center the notes with a accidental
-            text = str(note)
-            if len(text) == 2:
-                x -= 20
-            else:
-                x -= 18
-
+            text = str(n)
+            x -= 20 if len(text) == 2 else 18
             y -= 20
-            text = Text(x, y, text, TEXT_COLOR)
-            text.drawText()
-
-    show_image()
+            Text(x, y, text, TEXT_COLOR).drawText()
 
 
-def get_offset(fret):
-    if fret == 0:
-        return 0
-    if fret == 1:
-        return 46
-    if fret == 2:
-        return 39
-    if fret == 3:
-        return 39
-    if fret == 4:
-        return 36
-    if fret == 5:
-        return 36
-    if fret == 6:
-        return 40
-    if fret == 7:
-        return 50
-    if fret == 8:
-        return 57
-    if fret == 9:
-        return 72
-    if fret == 10:
-        return 85
-    if fret == 11:
-        return 105
-    if fret == 12:
-        return 125
+def display(fretboard_map, notes: list, on_apply=None) -> None:
+    draw_notes(fretboard_map, notes)
+    show_image(on_apply)
 
 
 class Circle:
