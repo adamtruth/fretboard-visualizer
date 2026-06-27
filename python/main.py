@@ -12,7 +12,6 @@ TEXT_COLOR = "white"
 notes = []
 interval = {}
 # GUI-related Globals
-window_title = 'Fretboard Visualizer'
 
 # Circle attributes
 # Initial starting location (Open low E string)
@@ -58,7 +57,7 @@ def generate_notes(accidental_type: str) -> list:
 
 def get_note_idx(note: str) -> int:
     ''' Returns the starting index of a given note.
-        e.g. E returns 7
+        e.g. note E returns index 7
     '''
     # The index (int) for the chosen note
     return notes.index(note)
@@ -205,12 +204,12 @@ def get_chord(chord_type: str, interval: dict) -> list:
         chord.append(interval['M7'])
 
     if chord_type == 'dim':
-        chord.append(interval[''])
-        chord.append(interval[''])
+        chord.append(interval['m3'])
+        chord.append(interval['tritone'])
 
     if chord_type == 'aug':
-        chord.append(interval[''])
-        chord.append(interval[''])
+        chord.append(interval['M3'])
+        chord.append(interval['m6'])
 
     if chord_type == 'sus':
         chord.append(interval[''])
@@ -369,9 +368,10 @@ def main():
     fretboard = create_fretboard()
 
     # Display scale notes
-    desired_scale = create_scale('C', 'major')
-    desired_chord = create_chord('C', 'major')
-    display(fretboard, desired_scale)
+    # desired_scale = create_scale('C', 'major')
+    # display(fretboard, desired_scale)
+    desired_chord = create_chord('G', 'major')
+    display(fretboard, desired_chord)
 
 
 if __name__ == "__main__":
