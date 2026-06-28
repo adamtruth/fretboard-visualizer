@@ -1,30 +1,32 @@
-import notes as nt
-import fretboard as fb
-import chords as ch
-import scale as sc
-import modes as mo
 import display as dp
+import notes
+import fretboard
+import chords
+import scales
+import modes
 
 
 def main():
-    note_list = nt.generate_notes('flat')
-    fretboard = fb.create_fretboard(note_list)
-    default_scale = sc.create_scale(note_list, 'C', 'major')
+    default_notes = notes.generate_notes('flat')
+    default_scale = scales.create(default_notes, 'C', 'major')
+    fb = fretboard.create(default_notes)
 
-    def on_apply(key, type_value, mode_setting, accidental):
-        nl = nt.generate_notes(accidental)
-        fb_map = fb.create_fretboard(nl)
+    def draw(key, type_value, mode_setting, accidental):
+        notes_list = notes.generate_notes(accidental)
+        fb_map = fretboard.create(notes_list)
+
         if mode_setting == 'chord':
-            result = ch.create_chord(nl, key, type_value)
+            result = chords.create(notes_list, key, type_value)
         elif mode_setting == 'scale':
-            result = sc.create_scale(nl, key, type_value)
+            result = scales.create(notes_list, key, type_value)
         elif mode_setting == 'mode':
-            result = mo.create_mode(nl, key, type_value)
+            result = modes.create(notes_list, key, type_value)
         else:
             result = default_scale
+
         dp.draw_notes(fb_map, result)
 
-    dp.display(fretboard, default_scale, on_apply)
+    dp.start(fb, default_scale, draw)
 
 
 if __name__ == "__main__":

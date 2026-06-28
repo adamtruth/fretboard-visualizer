@@ -48,7 +48,8 @@ def add_intervals(interval: dict, keys: list) -> list:
     return added_intervals
 
 
-def get_interval(notes: list, key: str) -> dict:
+def get_intervals(notes: list, key: str) -> dict:
+    # FIX: reverse the ordering of parameters
     ''' Returns interval dict e.g. {'root': 'A', 'm2': 'Bb', ...} '''
     interval_names = ['root', 'm2', 'M2', 'm3', 'M3',
                       'P4', 'tritone', 'P5', 'm6', 'M6', 'm7', 'M7']

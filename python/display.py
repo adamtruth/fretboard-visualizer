@@ -1,12 +1,11 @@
 import notes as nt
 import chords as ch
-import scale as sc
+import scales as sc
 import modes as mo
 import tkinter as tk
 
-from tkinter import ttk
+from tkinter import ttk, font as tkf
 from PIL import Image, ImageDraw, ImageFont, ImageTk
-from tkinter import font as tkfont
 
 # pil_image is the working canvas. Notes are drawn onto it directly.
 image_path = 'assets/images/fretboard.png'
@@ -19,13 +18,14 @@ font = ImageFont.load_default(size=16)
 root = tk.Tk()
 
 # Set a larger default font for all Tkinter widgets
-tkfont.nametofont('TkDefaultFont').configure(size=13)
-tkfont.nametofont('TkTextFont').configure(size=13)
+tkf.nametofont('TkDefaultFont').configure(size=13)
+tkf.nametofont('TkTextFont').configure(size=13)
 
 # SCALE resizes the image for display only
 # the underlying coordinates stay the same.
 SCALE = 1.5
-r = 15          # circle radius for note markers
+# circle radius for note markers
+r = 15
 TEXT_COLOR = '#fff'
 
 
@@ -43,22 +43,22 @@ def reset_image():
     draw = ImageDraw.Draw(pil_image)
 
 
-def show_image(on_apply=None):
+def show_image(apply=None):
     ''' Display PIL image in Tkinter window.
-        on_apply is called when the user clicks Apply. '''
+        apply is called when the user clicks Apply. '''
     root.title('Fretboard Visualizer')
 
-    # --- Fretboard image ---
+    # Fretboard image
     tk_image = ImageTk.PhotoImage(scale_image())
     image_label = tk.Label(root, image=tk_image)
     image_label.image = tk_image  # keep reference so GC doesn't collect it
     image_label.pack(pady=(10, 0))
 
-    # Label showing the selected key + type (e.g. "C major")
+    # Selected key + type (e.g. "C major")
     name_label = tk.Label(root, text='', font=('Arial', int(14 * SCALE)))
     name_label.pack(pady=5)
 
-    # --- Controls row ---
+    # Controls row
     controls = tk.Frame(root)
     controls.pack(pady=10)
 
@@ -120,13 +120,14 @@ def show_image(on_apply=None):
         if not key_var.get() or not type_var.get():
             return
         reset_image()
-        if on_apply:
-            on_apply(key_var.get(), type_var.get(),
+        if apply:
+            apply(key_var.get(), type_var.get(),
                      mode_setting.get().lower(), accidental_var.get())
         new_image = ImageTk.PhotoImage(scale_image())
         image_label.config(image=new_image)
         image_label.image = new_image
-        name_label.config(text=f'{key_var.get()} {type_var.get()}')
+        sep = '' if mode_setting.get().lower() == 'chord' else ' '
+        name_label.config(text=f'{key_var.get()}{sep}{type_var.get()}')
 
     accidental_var.trace_add('write', update_keys)
     mode_setting.trace_add('write', update_type_menu)
@@ -160,10 +161,10 @@ def draw_notes(fretboard_map, notes: list) -> None:
             Text(x, y, text, TEXT_COLOR).drawText()
 
 
-def display(fretboard_map, notes: list, on_apply=None) -> None:
-    ''' Draws the initial notes then opens the UI. '''
+def start(fretboard_map, notes: list, apply=None) -> None:
+    ''' Display the notes then opens the UI. '''
     draw_notes(fretboard_map, notes)
-    show_image(on_apply)
+    show_image(apply)
 
 
 class Circle:
