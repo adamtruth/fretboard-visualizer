@@ -40,6 +40,14 @@ def order_notes(notes: list, root: str, fret_count: int) -> list:
     return [notes[(i + root_idx) % len(notes)] for i in range(fret_count + 1)]
 
 
+def add_intervals(interval: dict, keys: list) -> list:
+    ''' Returns a list of note values for the given interval keys. '''
+    added_intervals = []
+    for key in keys:
+        added_intervals.append(interval[key])
+    return added_intervals
+
+
 def get_interval(notes: list, key: str) -> dict:
     ''' Returns interval dict e.g. {'root': 'A', 'm2': 'Bb', ...} '''
     interval_names = ['root', 'm2', 'M2', 'm3', 'M3',

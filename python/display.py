@@ -1,123 +1,145 @@
 import notes as nt
+import chords as ch
+import scale as sc
+import modes as mo
 import tkinter as tk
 
 from tkinter import ttk
-from PIL import Image, ImageDraw, ImageFont, ImageText, ImageTk
+from PIL import Image, ImageDraw, ImageFont, ImageTk
+from tkinter import font as tkfont
 
-# PIL globals
+# pil_image is the working canvas. Notes are drawn onto it directly.
 image_path = 'assets/images/fretboard.png'
 pil_image = Image.open(image_path)
 
 draw = ImageDraw.Draw(pil_image)
 
-font_path = 'assets/fonts/Montserrat.ttf'
-try:
-    font = ImageFont.truetype(font_path, 20)
-except OSError:
-    print('Error loading font')
+font = ImageFont.load_default(size=16)
 
-# Tkinter globals
 root = tk.Tk()
 
-r = 15
+# Set a larger default font for all Tkinter widgets
+tkfont.nametofont('TkDefaultFont').configure(size=13)
+tkfont.nametofont('TkTextFont').configure(size=13)
+
+# SCALE resizes the image for display only
+# the underlying coordinates stay the same.
+SCALE = 1.5
+r = 15          # circle radius for note markers
 TEXT_COLOR = '#fff'
 
 
+def scale_image():
+    ''' Returns a scaled copy of pil_image for display. '''
+    w = int(pil_image.width * SCALE)
+    h = int(pil_image.height * SCALE)
+    return pil_image.resize((w, h), Image.LANCZOS)
+
+
 def reset_image():
+    ''' Reloads the blank fretboard image, clearing any drawn notes. '''
     global pil_image, draw
     pil_image = Image.open(image_path)
     draw = ImageDraw.Draw(pil_image)
 
 
 def show_image(on_apply=None):
+    ''' Display PIL image in Tkinter window.
+        on_apply is called when the user clicks Apply. '''
     root.title('Fretboard Visualizer')
 
-    # Replace with for chord_type in chord_types
-    CHORD_TYPES = ['major', 'minor', '7', 'dim', 'aug']
-    # Replace with for scale_type in scale_types
-    SCALE_TYPES = ['major', 'minor', 'major pentatonic', 'minor pentatonic',
-                   'diminished', 'augmented', 'whole tone']
-
-    # Image
-    tk_image = ImageTk.PhotoImage(pil_image)
+    # --- Fretboard image ---
+    tk_image = ImageTk.PhotoImage(scale_image())
     image_label = tk.Label(root, image=tk_image)
-    image_label.image = tk_image
+    image_label.image = tk_image  # keep reference so GC doesn't collect it
     image_label.pack(pady=(10, 0))
 
-    # Name label below image
-    name_label = tk.Label(root, text='', font=('Arial', 14))
+    # Label showing the selected key + type (e.g. "C major")
+    name_label = tk.Label(root, text='', font=('Arial', int(14 * SCALE)))
     name_label.pack(pady=5)
 
-    # Inline controls row
+    # --- Controls row ---
     controls = tk.Frame(root)
     controls.pack(pady=10)
 
-    # Select scales or chords
-    toggle_btn = ttk.Button(controls, text='Scales')
-    toggle_btn.pack(side=tk.LEFT, padx=(10, 10))
-    mode = tk.StringVar(value='chord')
-    key_var = tk.StringVar()
-    type_var = tk.StringVar()
-    accidental_var = tk.StringVar(value='flat')
+    # StringVars hold the current selection for each control
+    # Chord / Scale / Mode
+    mode_setting = tk.StringVar(value='Chord')
+    key_var = tk.StringVar()    # root note (e.g. C, F#)
+    type_var = tk.StringVar()   # type within the mode (e.g. major, dorian)
+    accidental_var = tk.StringVar(value='flat')  # flat or sharp note names
 
-    # Select accidental
+    # Mode selection
+    tk.Label(controls, text='Mode').pack(side=tk.LEFT, padx=(0, 4))
+    mode_menu = ttk.Combobox(controls, textvariable=mode_setting,
+                             values=['Chord', 'Scale', 'Mode'],
+                             width=6, state='readonly')
+    mode_menu.pack(side=tk.LEFT, padx=(0, 10))
+
+    # Preferred Accidental selection
     tk.Label(controls, text='Accidental').pack(side=tk.LEFT, padx=(0, 4))
     ttk.Radiobutton(controls, text='♭', variable=accidental_var,
                     value='flat').pack(side=tk.LEFT)
-
     ttk.Radiobutton(controls, text='♯', variable=accidental_var,
                     value='sharp').pack(side=tk.LEFT, padx=(0, 10))
 
+    # Key selection
     tk.Label(controls, text='Key').pack(side=tk.LEFT, padx=(0, 2))
     key_menu = ttk.Combobox(controls, textvariable=key_var,
                             values=nt.generate_notes('flat'),
                             width=4, state='readonly')
     key_menu.pack(side=tk.LEFT, padx=(0, 10))
 
-    # Select Chord or Scale type
+    # Chord/Scale/Mode Type selection e.g. major, minor, etc.
+    # Dependent on the mode selected
     tk.Label(controls, text='Type').pack(side=tk.LEFT, padx=(0, 2))
     type_menu = ttk.Combobox(controls,
                              textvariable=type_var,
-                             values=CHORD_TYPES,
+                             values=ch.TYPES,
                              width=18, state='readonly')
     type_menu.pack(side=tk.LEFT, padx=(0, 10))
 
-    apply_btn = ttk.Button(controls, text='Apply')
-    apply_btn.pack(side=tk.LEFT, padx=(0, 10))
+    # Callbacks functions
 
     def update_keys(*_):
+        ''' Refreshes the key dropdown when the accidental changes. '''
         key_menu['values'] = nt.generate_notes(accidental_var.get())
         key_var.set('')
 
-    accidental_var.trace_add('write', update_keys)
-
-    def toggle_mode():
-        if mode.get() == 'chord':
-            mode.set('scale')
-            type_menu['values'] = SCALE_TYPES
-            toggle_btn.config(text='Chords')
-        else:
-            mode.set('chord')
-            type_menu['values'] = CHORD_TYPES
-            toggle_btn.config(text='Scales')
+    def update_type_menu(*_):
+        ''' Swaps the Type dropdown options when the Mode changes. '''
+        mapping = {'chord': ch.TYPES, 'scale': sc.TYPES, 'mode': mo.TYPES}
+        # mode_setting stores 'Chord'/'Scale'/'Mode' (capitalized for display),
+        # so .lower() is used to match the mapping keys.
+        type_menu['values'] = mapping.get(mode_setting.get().lower(), ch.TYPES)
         type_var.set('')
 
-    def apply():
+    def refresh(*_):
+        ''' Redraws the fretboard whenever the key or type selection changes.
+            Skips if either is empty (e.g. mid-selection). '''
+        if not key_var.get() or not type_var.get():
+            return
         reset_image()
         if on_apply:
-            on_apply(key_var.get(), type_var.get(), mode.get(), accidental_var.get())
-        new_image = ImageTk.PhotoImage(pil_image)
+            on_apply(key_var.get(), type_var.get(),
+                     mode_setting.get().lower(), accidental_var.get())
+        new_image = ImageTk.PhotoImage(scale_image())
         image_label.config(image=new_image)
         image_label.image = new_image
         name_label.config(text=f'{key_var.get()} {type_var.get()}')
 
-    toggle_btn.config(command=toggle_mode)
-    apply_btn.config(command=apply)
+    accidental_var.trace_add('write', update_keys)
+    mode_setting.trace_add('write', update_type_menu)
+    key_var.trace_add('write', refresh)
+    type_var.trace_add('write', refresh)
 
     root.mainloop()
 
 
 def draw_notes(fretboard_map, notes: list) -> None:
+    ''' Draws a circle and note text
+        for each position of a note on the fretboard.
+        The root note is highlighted in red; all others are blue. '''
     idx = 0
     for n in notes:
         notes_lists = fretboard_map.get(n)
@@ -131,13 +153,15 @@ def draw_notes(fretboard_map, notes: list) -> None:
             color = 'red' if is_root else 'blue'
             Circle(x, y, r, color).drawCircle()
 
+            # Offset text position to center it inside the circle
             text = str(n)
-            x -= 20 if len(text) == 2 else 18
-            y -= 20
+            x -= 24 if len(text) == 2 else 20
+            y -= 24
             Text(x, y, text, TEXT_COLOR).drawText()
 
 
 def display(fretboard_map, notes: list, on_apply=None) -> None:
+    ''' Draws the initial notes then opens the UI. '''
     draw_notes(fretboard_map, notes)
     show_image(on_apply)
 
@@ -168,5 +192,4 @@ class Text:
         self.font = font
 
     def drawText(self):
-        text = ImageText.Text(self.text)
-        draw.text((self.x, self.y), text, self.text_color, font=self.font)
+        draw.text((self.x, self.y), self.text, self.text_color, font=self.font)
