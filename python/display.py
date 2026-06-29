@@ -42,7 +42,6 @@ def reset_image():
     pil_image = Image.open(image_path)
     draw = ImageDraw.Draw(pil_image)
 
-
 def show_image(apply=None):
     ''' Display PIL image in Tkinter window.
         apply is called when the user clicks Apply. '''
@@ -57,6 +56,7 @@ def show_image(apply=None):
     # Selected key + type (e.g. "C major")
     name_label = tk.Label(root, text='', font=('Arial', int(14 * SCALE)))
     name_label.pack(pady=5)
+    # TODO: Display the notes in the scale below the name_label
 
     # Controls row
     controls = tk.Frame(root)
