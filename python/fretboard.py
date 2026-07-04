@@ -1,7 +1,7 @@
 import notes
 
-STRINGS = ['E', 'A', 'D', 'G', 'B', 'E']
-FRET_COUNT = 12
+STRINGS: list[str] = ['E', 'A', 'D', 'G', 'B', 'E']
+FRET_COUNT: int = 12
 
 # Coordinate constants for mapping fret positions to image pixels
 x_i, y_i = 45, 57
@@ -11,8 +11,8 @@ x_bar, y_bar = 120, 45
 def get_offset(fret: int) -> int:
     ''' Returns the pixel offset for a given fret
         because frets are not equal width. '''
-    offsets = {0: 0, 1: 46, 2: 39, 3: 39, 4: 36, 5: 36,
-               6: 40, 7: 50, 8: 57, 9: 72, 10: 85, 11: 105, 12: 125}
+    offsets: dict = {0: 0, 1: 46, 2: 39, 3: 39, 4: 36, 5: 36,
+                     6: 40, 7: 50, 8: 57, 9: 72, 10: 85, 11: 105, 12: 125}
     return offsets.get(fret, 0)
 
 

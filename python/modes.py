@@ -1,12 +1,12 @@
 import notes
 
-TYPES = ['ionian', 'dorian', 'phrygian', 'lydian',
-         'mixolydian', 'aeolian', 'locrian']
+TYPES: list[str] = ['ionian', 'dorian', 'phrygian', 'lydian',
+                    'mixolydian', 'aeolian', 'locrian']
 
 
 # We should probably turn this into a dictionary
 def get_mode(interval: dict, selected: str) -> list:
-    mode = [interval['root']]
+    mode: list[list[str]] = [interval['root']]
     if selected == 'ionian':
         mode += notes.add_intervals(interval,
                                     ['M2', 'M3', 'P4', 'P5', 'M6', 'M7'])

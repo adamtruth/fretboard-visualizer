@@ -29,6 +29,35 @@ r = 15
 TEXT_COLOR = '#fff'
 
 
+class Circle:
+    def __init__(self, x, y, r, color="red"):
+        self.x = x
+        self.y = y
+        self.r = r
+        self.color = color
+
+    def drawCircle(self):
+        draw.circle(
+                (self.x - self.r,
+                 self.y - self.r,
+                 self.x + self.r,
+                 self.y + self.r),
+                self.r,
+                fill=self.color, outline=None, width=1)
+
+
+class Text:
+    def __init__(self, x, y, text, text_color="#fff"):
+        self.x = x
+        self.y = y
+        self.text = text
+        self.text_color = text_color
+        self.font = font
+
+    def drawText(self):
+        draw.text((self.x, self.y), self.text, self.text_color, font=self.font)
+
+
 def scale_image():
     ''' Returns a scaled copy of pil_image for display. '''
     w = int(pil_image.width * SCALE)
@@ -165,32 +194,3 @@ def start(fretboard_map, notes: list, apply=None) -> None:
     ''' Display the notes then opens the UI. '''
     draw_notes(fretboard_map, notes)
     show_image(apply)
-
-
-class Circle:
-    def __init__(self, x, y, r, color="red"):
-        self.x = x
-        self.y = y
-        self.r = r
-        self.color = color
-
-    def drawCircle(self):
-        draw.circle(
-                (self.x - self.r,
-                 self.y - self.r,
-                 self.x + self.r,
-                 self.y + self.r),
-                self.r,
-                fill=self.color, outline=None, width=1)
-
-
-class Text:
-    def __init__(self, x, y, text, text_color="#fff"):
-        self.x = x
-        self.y = y
-        self.text = text
-        self.text_color = text_color
-        self.font = font
-
-    def drawText(self):
-        draw.text((self.x, self.y), self.text, self.text_color, font=self.font)

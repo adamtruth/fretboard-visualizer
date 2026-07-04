@@ -1,15 +1,15 @@
 import notes
 
-TYPES = ['major', 'natural minor', 'harmonic minor',
-         'major pentatonic', 'minor pentatonic',
-         'major blues', 'minor blues',
-         'bebop major', 'bebop dominant', 'bebop minor',
-         'diminished', 'augmented', 'whole tone']
+TYPES: list[str] = ['major', 'natural minor', 'harmonic minor',
+                    'major pentatonic', 'minor pentatonic',
+                    'major blues', 'minor blues',
+                    'bebop major', 'bebop dominant', 'bebop minor',
+                    'diminished', 'augmented', 'whole tone']
 
 
 # We should probably turn this into a dictionary - beyond 15 conditions
 def get_scale(interval: dict, selected: str) -> list:
-    scale = [interval['root']]
+    scale: list[list[str]] = [interval['root']]
     if selected == 'major':
         scale += notes.add_intervals(interval,
                                      ['M2', 'M3', 'P4', 'P5', 'M6', 'M7'])
@@ -22,7 +22,7 @@ def get_scale(interval: dict, selected: str) -> list:
         scale += notes.add_intervals(interval,
                                      ['M2', 'm3', 'P4', 'P5', 'm6', 'M7'])
 
-    # NOTE: Melodic is interesting because the ascent includes a m3 and M6
+    # NOTE: Melodic is troublesome because the ascent includes a m3 and M6
     #       and descending is m3 and m6
     # if selected == 'melodic minor':
     #     scale += notes.add_intervals(interval,
@@ -78,6 +78,6 @@ def get_scale(interval: dict, selected: str) -> list:
     return scale
 
 
-def create(scale_tones: list, root: str, selected: str) -> list:
-    interval = notes.get_intervals(scale_tones, root)
+def create(scale_notes: list, root: str, selected: str) -> list:
+    interval = notes.get_intervals(scale_notes, root)
     return get_scale(interval, selected)

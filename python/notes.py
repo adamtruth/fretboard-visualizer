@@ -1,28 +1,29 @@
-NOTES = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
-accidental = {'flat': 'b', 'sharp': '#'}
+NOTES: tuple = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
+ACCIDENTAL: dict = {'flat': 'b', 'sharp': '#'}
 
 
-def generate_notes(accidental_type: str) -> list:
+def generate_notes(selected_accidental: str) -> list:
     ''' Returns diatonic notes (including specified accidentals). '''
     notes = []
-    accidental_notes = []
-    for i in range(len(NOTES)):
-        if accidental_type == 'sharp':
-            accidental_notes.append(NOTES[i] + accidental[accidental_type])
+    accidentals = []
 
-        if accidental_type == 'flat':
+    for i in range(len(NOTES)):
+        if selected_accidental == 'sharp':
+            accidentals.append(NOTES[i] + ACCIDENTAL[selected_accidental])
+
+        if selected_accidental == 'flat':
             # Shift by one to prevent ordering A Ab B Bb...
             shift = NOTES[1:] + NOTES[:1]
-            accidental_notes.append(shift[i] + accidental[accidental_type])
+            accidentals.append(shift[i] + ACCIDENTAL[selected_accidental])
 
         notes.append(NOTES[i])
-        notes.append(accidental_notes[i])
+        notes.append(accidentals[i])
 
-    if accidental_type == 'sharp':
+    if selected_accidental == 'sharp':
         notes.remove('E#')
         notes.remove('B#')
 
-    if accidental_type == 'flat':
+    if selected_accidental == 'flat':
         notes.remove('Fb')
         notes.remove('Cb')
 
@@ -34,18 +35,15 @@ def get_note_idx(notes: list, note: str) -> int:
     return notes.index(note)
 
 
-def order_notes(notes: list, root: str, fret_count: int) -> list:
+def order_notes(notes: list, root: str, frets: int) -> list:
     ''' Returns notes ordered starting from root, wrapping circularly. '''
     root_idx = get_note_idx(notes, root)
-    return [notes[(i + root_idx) % len(notes)] for i in range(fret_count + 1)]
+    return [notes[(i + root_idx) % len(notes)] for i in range(frets + 1)]
 
 
 def add_intervals(interval: dict, keys: list) -> list:
     ''' Returns a list of note values for the given interval keys. '''
-    added_intervals = []
-    for key in keys:
-        added_intervals.append(interval[key])
-    return added_intervals
+    return [interval[k] for k in keys]
 
 
 def get_intervals(notes: list, key: str) -> dict:
