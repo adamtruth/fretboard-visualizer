@@ -5,7 +5,9 @@ description = "Guitar Fretboard Visualizer"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "numpy>=2.5.1",
     "pillow>=12.2.0",
     "pip>=26.1.2",
     "pynput>=1.8.2",
+    "simpleaudio>=1.0.4",
 ]
