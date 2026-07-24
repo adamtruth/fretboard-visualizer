@@ -10,14 +10,6 @@ help: ## Show this help message
 run: ## Execute the program
 	@uv run python3 -m main
 
-.PHONY: gui
-gui: ## Execute the program
-	@uv run python3 -m new_gui
-
-.PHONY: pic
-pic: ## Execute the program
-	@uv run python3 -m pic
-
-.PHONY: example
-example: ## Execute the program
-	@uv run python3 -m example_gui
+.PHONY: time
+time: ## Execute timing.py module
+	@uv run python3 -m timings
