@@ -21,20 +21,14 @@
             python3
             gcc
             linuxHeaders
-            alsa-lib
-            pkg-config
-            stdenv.cc.cc.lib
             (python3.withPackages (ps: with ps; [
               tkinter
               evdev
-              pycairo
-              simpleaudio
+              pillow
             ]))
           ];
           # Explicitly tell setup.py where the header files are stored in Nix
           C_INCLUDE_PATH = "${pkgs.linuxHeaders}/include:${pkgs.alsa-lib}/include";
-          PKG_CONFIG_PATH = "${pkgs.alsa-lib}/lib/pkgconfig";
-          LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.alsa-lib}/lib";
 
           shellHook = ''
             echo "Nix build environment loaded with Linux headers!"

@@ -8,7 +8,7 @@ from tkinter import ttk, font as tkf
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 
 # pil_image is the working canvas. Notes are drawn onto it directly.
-image_path = 'assets/images/fretboard.png'
+image_path = 'assets/fretboard.png'
 pil_image = Image.open(image_path)
 
 draw = ImageDraw.Draw(pil_image)

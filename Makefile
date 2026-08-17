@@ -5,11 +5,6 @@ help: ## Show this help message
 	@echo "Makefile commands:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-
 .PHONY: run
 run: ## Execute the program
-	@uv run python3 -m main
-
-.PHONY: time
-time: ## Execute timing.py module
-	@uv run python3 -m timings
+	@uv run --project ./src python ./src/main.py
