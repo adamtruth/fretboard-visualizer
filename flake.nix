@@ -1,5 +1,5 @@
 {
-  description = "A flake for Python including uv";
+  description = "Fretboard Visualizer";
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   inputs.systems.url = "github:nix-systems/default";
   inputs.flake-utils = {

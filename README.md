@@ -28,6 +28,6 @@ make
 
 ## TODO
 * Make the modules Object-Oriented (currently procedural)
-* Swap out Tkinter with something more modern (PyQt?)
+* Swap out Tkinter with something more modern, such as PyQt
 * Mode to draw notes on the fretboard and determine chords similar to [this](https://www.oolimo.com/en/guitar-chords/analyze).
 * Might create a piano visualizer from the note logic I've already created here.
