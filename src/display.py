@@ -1,7 +1,7 @@
-import notes as nt
-import chords as ch
-import scales as sc
-import modes as mo
+import notes
+import chords
+import scales
+import modes
 import tkinter as tk
 
 from tkinter import ttk, font as tkf
@@ -10,11 +10,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageTk
 # pil_image is the working canvas. Notes are drawn onto it directly.
 image_path = 'assets/fretboard.png'
 pil_image = Image.open(image_path)
-
 draw = ImageDraw.Draw(pil_image)
-
 font = ImageFont.load_default(size=16)
-
 root = tk.Tk()
 
 # Set a larger default font for all Tkinter widgets
@@ -24,6 +21,7 @@ tkf.nametofont('TkTextFont').configure(size=13)
 # SCALE resizes the image for display only
 # the underlying coordinates stay the same.
 SCALE = 1.5
+
 # circle radius for note markers
 r = 15
 TEXT_COLOR = '#fff'
@@ -115,7 +113,7 @@ def show_image(apply=None):
     # Key selection
     tk.Label(controls, text='Key').pack(side=tk.LEFT, padx=(0, 2))
     key_menu = ttk.Combobox(controls, textvariable=key_var,
-                            values=nt.generate_notes('flat'),
+                            values=notes.generate_notes('flat'),
                             width=4, state='readonly')
     key_menu.pack(side=tk.LEFT, padx=(0, 10))
 
@@ -124,7 +122,7 @@ def show_image(apply=None):
     tk.Label(controls, text='Type').pack(side=tk.LEFT, padx=(0, 2))
     type_menu = ttk.Combobox(controls,
                              textvariable=type_var,
-                             values=ch.TYPES,
+                             values=chords.TYPES,
                              width=18, state='readonly')
     type_menu.pack(side=tk.LEFT, padx=(0, 10))
 
@@ -132,15 +130,15 @@ def show_image(apply=None):
 
     def update_keys(*_):
         ''' Refreshes the key dropdown when the accidental changes. '''
-        key_menu['values'] = nt.generate_notes(accidental_var.get())
+        key_menu['values'] = notes.generate_notes(accidental_var.get())
         key_var.set('')
 
     def update_type_menu(*_):
         ''' Swaps the Type dropdown options when the Mode changes. '''
-        mapping = {'chord': ch.TYPES, 'scale': sc.TYPES, 'mode': mo.TYPES}
+        mapping = {'chord': chords.TYPES, 'scale': scales.TYPES, 'mode': modes.TYPES}
         # mode_setting stores 'Chord'/'Scale'/'Mode' (capitalized for display),
         # so .lower() is used to match the mapping keys.
-        type_menu['values'] = mapping.get(mode_setting.get().lower(), ch.TYPES)
+        type_menu['values'] = mapping.get(mode_setting.get().lower(), chords.TYPES)
         type_var.set('')
 
     def refresh(*_):

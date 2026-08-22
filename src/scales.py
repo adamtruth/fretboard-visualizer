@@ -1,10 +1,19 @@
 import notes
 
-TYPES: list[str] = ['major', 'natural minor', 'harmonic minor',
-                    'major pentatonic', 'minor pentatonic',
-                    'major blues', 'minor blues',
-                    'bebop major', 'bebop dominant', 'bebop minor',
-                    'diminished', 'augmented', 'whole tone']
+TYPES: list[str] = ['major',
+                    'natural minor',
+                    'harmonic minor',
+                    'major pentatonic',
+                    'minor pentatonic',
+                    'major blues',
+                    'minor blues',
+                    'bebop major',
+                    'bebop dominant',
+                    'bebop minor',
+                    'diminished',
+                    'augmented',
+                    'whole tone'
+                    ]
 
 
 # We should probably turn this into a dictionary - beyond 15 conditions
@@ -43,14 +52,13 @@ def get_scale(interval: dict, selected: str) -> list:
         scale += notes.add_intervals(interval,
                                      ['M2', 'm3', 'P4', 'P5', 'm7'])
 
-    # Is this right?
     if selected == 'major blues':
         scale += notes.add_intervals(interval,
-                                     ['M2', 'M3', 'P4', 'P5', 'M6'])
+                                     ['M2', 'm3', 'M3', 'P5', 'M6'])
 
     if selected == 'minor blues':
         scale += notes.add_intervals(interval,
-                                     ['m3', 'P4', 'm6', 'm7'])
+                                     ['m3', 'P4', 'tritone', 'P5', 'm7'])
 
     if selected == 'bebop major':
         scale += notes.add_intervals(interval,
