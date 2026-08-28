@@ -1,2 +1,2 @@
 run: ## Execute the program
-	@uv run --project ./src python ./src/main.py
+	@python3 ./src/main.py
