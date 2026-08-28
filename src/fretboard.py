@@ -16,9 +16,9 @@ def get_offset(fret: int) -> int:
     return offsets.get(fret, 0)
 
 
-def order_notes(desired_notes: list, strings: list = STRINGS) -> list:
+def order_notes(desired_notes: notes.Notes, strings: list = STRINGS) -> list:
     ''' Creates a nested list of all desired_notes on the fretboard. '''
-    return [notes.order_notes(desired_notes, string, FRET_COUNT)
+    return [desired_notes.order_notes(string, FRET_COUNT)
             for string in reversed(strings)]
 
 
@@ -33,20 +33,20 @@ def get_positions(fretboard: list, note: str) -> dict:
     return {note: positions}
 
 
-def get_notes(desired_notes: list, fretboard: list) -> dict:
+def get_notes(desired_notes: notes.Notes, fretboard: list) -> dict:
     ''' Returns {note: [(string_idx, fret_idx), ...]}
         for all desired_notes.
     '''
     result = {}
-    for note in desired_notes:
+    for note in desired_notes.notes:
         result |= get_positions(fretboard, note)
     return result
 
 
-def map_notes(desired_notes: list, fretboard_notes: dict) -> dict:
+def map_notes(desired_notes: notes.Notes, fretboard_notes: dict) -> dict:
     ''' Maps each note to pixel coordinates on the fretboard image. '''
     fretboard_map = {}
-    for note in desired_notes:
+    for note in desired_notes.notes:
         fret_positions = fretboard_notes[note]
         positions = []
         for string_idx, fret_idx in fret_positions:
@@ -57,7 +57,7 @@ def map_notes(desired_notes: list, fretboard_notes: dict) -> dict:
     return fretboard_map
 
 
-def create(desired_notes: list) -> dict:
+def create(desired_notes: notes.Notes) -> dict:
     ''' Returns the completed fretboard coordinate map. '''
     fretboard_grid = order_notes(desired_notes)
     fretboard_notes = get_notes(desired_notes, fretboard_grid)

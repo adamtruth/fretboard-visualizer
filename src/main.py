@@ -7,12 +7,12 @@ import modes
 
 
 def main():
-    default_notes = notes.generate_notes('flat')
+    default_notes = notes.Notes('flat')
     default_scale = scales.create(default_notes, 'C', 'major')
     fb = fretboard.create(default_notes)
 
     def draw(key, type_value, mode_setting, accidental):
-        notes_list = notes.generate_notes(accidental)
+        notes_list = notes.Notes(accidental)
         fb_map = fretboard.create(notes_list)
 
         if mode_setting == 'chord':

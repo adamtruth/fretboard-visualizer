@@ -113,7 +113,7 @@ def show_image(apply=None):
     # Key selection
     tk.Label(controls, text='Key').pack(side=tk.LEFT, padx=(0, 2))
     key_menu = ttk.Combobox(controls, textvariable=key_var,
-                            values=notes.generate_notes('flat'),
+                            values=notes.Notes('flat').notes,
                             width=4, state='readonly')
     key_menu.pack(side=tk.LEFT, padx=(0, 10))
 
@@ -130,7 +130,7 @@ def show_image(apply=None):
 
     def update_keys(*_):
         ''' Refreshes the key dropdown when the accidental changes. '''
-        key_menu['values'] = notes.generate_notes(accidental_var.get())
+        key_menu['values'] = notes.Notes(accidental_var.get())
         key_var.set('')
 
     def update_type_menu(*_):

@@ -38,6 +38,6 @@ def get_mode(interval: dict, selected: str) -> list:
     return mode
 
 
-def create(mode_tones: list, root: str, selected: str) -> list:
+def create(mode_tones: notes.Notes, root: str, selected: str) -> list:
     interval = notes.get_intervals(mode_tones, root)
     return get_mode(interval, selected)

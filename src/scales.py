@@ -12,8 +12,7 @@ TYPES: list[str] = ['major',
                     'bebop minor',
                     'diminished',
                     'augmented',
-                    'whole tone'
-                    ]
+                    'whole tone']
 
 
 # We should probably turn this into a dictionary - beyond 15 conditions
@@ -86,6 +85,6 @@ def get_scale(interval: dict, selected: str) -> list:
     return scale
 
 
-def create(scale_notes: list, root: str, selected: str) -> list:
+def create(scale_notes: notes.Notes, root: str, selected: str) -> list:
     interval = notes.get_intervals(scale_notes, root)
     return get_scale(interval, selected)

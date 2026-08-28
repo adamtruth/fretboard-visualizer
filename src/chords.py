@@ -88,6 +88,6 @@ def get_chord(chord_type: str, interval: dict) -> list:
     return chord
 
 
-def create(chord_notes: list, root: str, chord_type: str) -> list:
+def create(chord_notes: notes.Notes, root: str, chord_type: str) -> list:
     interval = notes.get_intervals(chord_notes, root)
     return get_chord(chord_type, interval)
