@@ -1,6 +1,3 @@
-# NOTES: tuple = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
-# ACCIDENTAL: dict = {'flat': 'b', 'sharp': '#'}
-#
 class Notes:
     NOTES: tuple = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
     ACCIDENTAL: dict = {'flat': 'b', 'sharp': '#'}
@@ -38,12 +35,13 @@ class Notes:
 
         return notes
 
-
+    # TODO: Consider moving this out of the class
     def get_note_idx(self, note: str) -> int:
         ''' Returns the index of a given note. e.g. E -> 7 '''
         return self.notes.index(note)
 
 
+    # TODO: Consider renaming this function
     def order_notes(self, root: str, frets: int) -> list:
         ''' Returns notes ordered starting from root, wrapping circularly. '''
         root_idx = self.get_note_idx(root)
@@ -56,6 +54,7 @@ def add_intervals(interval: dict, keys: list) -> list:
     return [interval[k] for k in keys]
 
 
+# FIX:
 def get_intervals(self, key: str) -> dict:
     ''' Returns interval dict e.g. {'root': 'A', 'm2': 'Bb', ...} '''
     interval_names = ['root', 'm2', 'M2', 'm3', 'M3',

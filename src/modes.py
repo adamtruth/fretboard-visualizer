@@ -1,10 +1,15 @@
 import notes
 
-TYPES: list[str] = ['ionian', 'dorian', 'phrygian', 'lydian',
-                    'mixolydian', 'aeolian', 'locrian']
+TYPES: list[str] = [ 'ionian',
+                     'dorian',
+                     'phrygian',
+                     'lydian',
+                     'mixolydian',
+                     'aeolian',
+                     'locrian' ]
 
 
-# We should probably turn this into a dictionary
+# TODO: We should probably turn this into a dictionary
 def get_mode(interval: dict, selected: str) -> list:
     mode: list[list[str]] = [interval['root']]
     if selected == 'ionian':
@@ -38,6 +43,6 @@ def get_mode(interval: dict, selected: str) -> list:
     return mode
 
 
-def create(mode_tones: notes.Notes, root: str, selected: str) -> list:
-    interval = notes.get_intervals(mode_tones, root)
+def create(mode_notes: notes.Notes, root: str, selected: str) -> list:
+    interval = notes.get_intervals(mode_notes, root)
     return get_mode(interval, selected)

@@ -7,8 +7,12 @@ import modes
 
 
 def main():
+    # default configuration
+    # accidental (flat) and scale (C major)
     default_notes = notes.Notes('flat')
     default_scale = scales.create(default_notes, 'C', 'major')
+
+    # initialize fretboard with default configuration
     fb = fretboard.create(default_notes)
 
     def draw(key, type_value, mode_setting, accidental):
@@ -26,6 +30,7 @@ def main():
 
         dp.draw_notes(fb_map, result)
 
+    # create the window with the default scale
     dp.start(fb, default_scale, draw)
 
 

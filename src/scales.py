@@ -1,21 +1,21 @@
 import notes
 
-TYPES: list[str] = ['major',
-                    'natural minor',
-                    'harmonic minor',
-                    'major pentatonic',
-                    'minor pentatonic',
-                    'major blues',
-                    'minor blues',
-                    'bebop major',
-                    'bebop dominant',
-                    'bebop minor',
-                    'diminished',
-                    'augmented',
-                    'whole tone']
+TYPES: list[str] = [ 'major',
+                     'natural minor',
+                     'harmonic minor',
+                     'major pentatonic',
+                     'minor pentatonic',
+                     'major blues',
+                     'minor blues',
+                     'bebop major',
+                     'bebop dominant',
+                     'bebop minor',
+                     'diminished',
+                     'augmented',
+                     'whole tone' ]
 
 
-# We should probably turn this into a dictionary - beyond 15 conditions
+# TODO: We should probably turn this into a dictionary - beyond 15 conditions
 def get_scale(interval: dict, selected: str) -> list:
     scale: list[list[str]] = [interval['root']]
     if selected == 'major':

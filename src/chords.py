@@ -1,21 +1,43 @@
 import notes
 
-TYPES: list[str] = ['maj', 'm', 'dim', 'aug', 'sus2', 'sus4'
-                    '7', 'maj7', 'm7', 'ø7', 'o7',
-                    '6', 'm6',
-                    '9', 'm9',
-                    '6/9', '13',
-                    '7b9b13', '7b9']
-# 'm13',
+# TODO: 'm13' if it exists
+# TODO: Add sus extension chords 6sus2, 6sus4, 9sus2 9sus4 13sus2 13sus4
+TYPES: list[str] = [
+                    # Triads (three note chords)
+                     'maj',
+                     'm',
+                     'dim',
+                     'aug',
+                     'sus2',
+                     'sus4',
+
+                     # Sevenths chords (Four note chords)
+                     '7',
+                     'maj7',
+                     'm7',
+                     'ø7',
+                     'o7',
+                     '6',
+                     'm6',
+                     '9',
+                     'm9',
+                     '6/9',
+                     '13',
+                     '7b9b13',
+                     '7b9' ]
 
 
-# We should probably turn this into a dictionary
+
+# TODO: We should probably turn this into a dictionary
 def get_chord(chord_type: str, interval: dict) -> list:
     ''' Returns chord notes e.g. ['A', 'C#', 'E'] '''
 
     chord: list[list[str]] = [interval['root']]
 
-    # in notes.py -- add the intervals extensions for M9, P11, M13
+    # NOTE: notes.py -- add the intervals extensions for M9, P11, M13
+    # instead of M2, P4, M6, etc. (enharmonic)
+    # Ideally we would want to allow chord construction with either
+    # leaving it to preference.
 
     # Triads
     if chord_type == 'maj':
@@ -47,10 +69,12 @@ def get_chord(chord_type: str, interval: dict) -> list:
     if chord_type == 'm7':
         chord += notes.add_intervals(interval,
                                      ['m3', 'P5', 'm7'])
-    if chord_type == 'ø7':  # half-dimished
+    # half-dimished
+    if chord_type == 'ø7':
         chord += notes.add_intervals(interval,
                                      ['m3', 'tritone', 'm7'])
-    if chord_type == 'o7':  # fully diminished
+    # fully diminished
+    if chord_type == 'o7':
         chord += notes.add_intervals(interval,
                                      ['m3', 'tritone', 'M6'])
 
@@ -64,10 +88,11 @@ def get_chord(chord_type: str, interval: dict) -> list:
                                      ['m3', 'P5', 'M6'])
     if chord_type == '9':
         chord += notes.add_intervals(interval,
-                                     ['m3', 'P5', 'M7', 'M2'])  # 9th
+                                     ['m3', 'P5', 'M7', 'M2'])
     if chord_type == 'm9':
         chord += notes.add_intervals(interval,
-                                     ['m3', 'P5', 'M7', 'm2'])  # 9th == m2
+                                     # 9th == m2
+                                     ['m3', 'P5', 'M7', 'm2'])
     if chord_type == '13':
         chord += notes.add_intervals(interval,
                                      # M9, P11, M13, omit P5
@@ -84,7 +109,6 @@ def get_chord(chord_type: str, interval: dict) -> list:
                                      # M9, P11, M13, omit P5
                                      ['M3', 'm7', 'm2'])
 
-    # Add sus extension chords 6sus2, 6sus4, 9sus2 9sus4 13sus2 13sus4
     return chord
 
 

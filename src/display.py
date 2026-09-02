@@ -14,15 +14,15 @@ draw = ImageDraw.Draw(pil_image)
 font = ImageFont.load_default(size=16)
 root = tk.Tk()
 
-# Set a larger default font for all Tkinter widgets
+# Set a larger font for all Tkinter widgets
 tkf.nametofont('TkDefaultFont').configure(size=13)
 tkf.nametofont('TkTextFont').configure(size=13)
 
 # SCALE resizes the image for display only
-# the underlying coordinates stay the same.
+# the underlying coordinates stay the same
 SCALE = 1.5
 
-# circle radius for note markers
+# Circle radius for note markers
 r = 15
 TEXT_COLOR = '#fff'
 
@@ -60,6 +60,7 @@ def scale_image():
     ''' Returns a scaled copy of pil_image for display. '''
     w = int(pil_image.width * SCALE)
     h = int(pil_image.height * SCALE)
+    # TODO: Resolve LANCZOS deprecation warning in Pillow 10.0.0
     return pil_image.resize((w, h), Image.LANCZOS)
 
 
@@ -77,7 +78,10 @@ def show_image(apply=None):
     # Fretboard image
     tk_image = ImageTk.PhotoImage(scale_image())
     image_label = tk.Label(root, image=tk_image)
-    image_label.image = tk_image  # keep reference so GC doesn't collect it
+
+    # TODO: Resolve image_label.image is unknown being unknown issue in Tkinter.
+    # See https://stackoverflow.com/a/7557022
+    image_label.image = tk_image
     image_label.pack(pady=(10, 0))
 
     # Selected key + type (e.g. "C major")
@@ -152,6 +156,9 @@ def show_image(apply=None):
                      mode_setting.get().lower(), accidental_var.get())
         new_image = ImageTk.PhotoImage(scale_image())
         image_label.config(image=new_image)
+
+        # TODO: Resolve image_label.image is unknown being unknown issue in Tkinter.
+        # See https://stackoverflow.com/a/7557022
         image_label.image = new_image
         sep = '' if mode_setting.get().lower() == 'chord' else ' '
         name_label.config(text=f'{key_var.get()}{sep}{type_var.get()}')

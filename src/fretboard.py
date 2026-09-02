@@ -1,9 +1,12 @@
 import notes
 
+# String notes for standard tuning
 STRINGS: list[str] = ['E', 'A', 'D', 'G', 'B', 'E']
+
+# Number of frets we are displaying on the fretboard image
 FRET_COUNT: int = 12
 
-# Coordinate constants for mapping fret positions to image pixels
+# Coordinates for mapping fret positions to image pixels
 x_i, y_i = 45, 57
 x_bar, y_bar = 120, 45
 
@@ -34,9 +37,7 @@ def get_positions(fretboard: list, note: str) -> dict:
 
 
 def get_notes(desired_notes: notes.Notes, fretboard: list) -> dict:
-    ''' Returns {note: [(string_idx, fret_idx), ...]}
-        for all desired_notes.
-    '''
+    ''' Returns {note: [(string_idx, fret_idx), ...]} for all desired_notes. '''
     result = {}
     for note in desired_notes.notes:
         result |= get_positions(fretboard, note)
